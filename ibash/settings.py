@@ -26,9 +26,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'uo%n=b$8964zlau0l!upxj4=__(8c6m#__*2z+egh0=dff*f3w'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True # 在线上服务器要设置为False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [] # 在线上服务器要设置该选项
 
 
 # Application definition

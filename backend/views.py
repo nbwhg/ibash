@@ -354,6 +354,7 @@ def upload_pic(request):
     elif request.method == 'POST':
         '''POST方法为上传图片'''
         '''处理文件上传'''
+        '''在服务器端上传目录要有web服务器的写权限'''
         filename = request.FILES['input44[]']
         obj = utils.upload_pic(filename)
         return HttpResponse(json.dumps({'text': 'success'}))
