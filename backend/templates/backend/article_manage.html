@@ -1,0 +1,233 @@
+{% extends 'backend/base.html' %}
+
+{% block main-area %}
+{% block title %}
+<div style="color: #FF6C60"><h3>博文列表</h3></div>
+{% endblock %}
+<div id="filter-content">
+    <form class="form-inline" id="myfilter" method="post" action="{% url 'backend:article_manage' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="InputCate">博文分类 : </label>
+            <select class="form-control input-sm" id="InputCate" name="category_id">
+                <option value="all" selected="selected">所有分类</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="InputName2">作者 : </label>
+            <select class="form-control input-sm" id="InputName2" name="author_id">
+                <option value="all" selected="selected">所有作者</option>
+                {% for author in authors %}
+                    <option value="{{ author.id }}">{{ author.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="InputPubDate2">发布日期 : </label>
+            <div class="input-group">
+                <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
+                <input type="text" class="form-control input-sm ibash-date" id="InputPubDate2" placeholder="所有发布日期" name="published_date" value="2016-01-01" >
+                <div class="input-group-addon alldate" onclick="AllDate(this)">所有</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="InputModDate2">修改日期 : </label>
+            <div class="input-group">
+                <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
+                <input type="text" class="form-control input-sm ibash-date" id="InputModDate2" placeholder="所有修改日期" name="modify_date" value="2016-01-01" >
+                <div class="input-group-addon alldate" onclick="AllDate(this)">所有</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="InputCon">包含内容 : </label>
+            <input type="text" class="form-control input-sm" id="InputCon" placeholder="标题,描述,正文" name="searchkey">
+        </div>
+        <input type="hidden" name="page" value="1" />
+        <button type="submit" class="btn btn-info input-sm" id="myfilterbuttom">筛选博文</button>
+    </form>
+</div>
+<table class="table table-striped table-bordered table-hover">
+    <thead>
+        <tr><th><input type="checkbox" id="sel-all" onclick="CheckAllToggle(this)"> #</th><th>标题</th><th>分类</th><th>描述</th><th>标签</th><th>作者</th><th>发表时间</th><th>最后修改</th></tr>
+    </thead>
+    <tbody>
+        {% for article in article_page %}
+            <tr><th scope="row"><input type="checkbox" aid="{{ article.id }}"> {{ forloop.counter }}</th><td>{{ article.title }}</td><td>{% for cate in article.categories.all %}{{ cate.name }}&nbsp;&nbsp;{% endfor %}</td><td>{{ article.description }}</td><td>{{ article.tags }}</td><td>{{ article.author.name }}</td><td>{{ article.published_date }}</td><td>{{ article.modify_date }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% block recovery %}
+<div class="row" id="option"><!--option批量操作功能-->
+    <div class="col-sm-1">
+        <div class="dropdown clearfix">
+        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            执行动作
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenu3">
+            <li class="dropdown-header">移动分类至</li>
+                {% for category in categories %}
+                    <li><a value="{{ category.id }}" onclick="ChangeCate(this)">{{ category.name }}</a></li>
+                {% endfor %}
+            <li class="dropdown-header">其他操作</li>
+            <li><a onclick="DeleteSelect()">删除</a></li>
+        </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<div id="cutpage" class="text-center"><!--分页功能,text-center是让文字居中-->
+    <ul class="pagination">
+        {% if article_page.has_previous %}
+            <li><a href="?page=1" aria-label="Previous" target="_self" pagenum="start"><span aria-hidden="true">首页</span></a></li>
+            <li><a href="?page={{ article_page.previous_page_number }}" target="_self" aria-label="Previous" pagenum="prev"><span aria-hidden="true">&lt;</span></a></li>
+        {% else %}
+            <li class="disabled"><span aria-hidden="true">首页</span></li>
+            <li class="disabled"><span aria-hidden="true">&lt;</span></li>
+        {% endif %}
+        {% for p_num in article_page.paginator.page_range %}
+            {% if p_num == article_page.number %}
+                <li class="active"><a href="?page={{ p_num }}" target="_self" pagenum="{{ p_num }}">{{ p_num }}<span class="sr-only">(current)</span></a></li>
+            {% else %}
+                <li><a href="?page={{ p_num }}" target="_self" pagenum="{{ p_num }}">{{ p_num }}<span class="sr-only">(current)</span></a></li>
+            {% endif %}
+        {% endfor %}
+        {% if article_page.has_next %}
+            <li><a href="?page={{ article_page.next_page_number }}" target="_self" aria-label="Next" pagenum="next"><span aria-hidden="true">&gt;</span></a></li>
+            <li><a href="?page={{ page_numbers }}" target="_self" aria-label="Next" pagenum="end"><span aria-hidden="true">末页</span></a></li>
+        {% else %}
+            <li class="disabled"><span aria-hidden="true">&gt;</span></li>
+            <li class="disabled"><span aria-hidden="true">末页</span></li>
+        {% endif %}
+    </ul>
+</div><!--分页-->
+{% endblock %}
+
+{% block js-area %}
+<script>
+    var myDate = new Date();
+   $(document).ready(function() {
+       $('.ibash-date').daterangepicker({ singleDatePicker: true });//日历效果
+       $('#InputModDate2').val(myDate.getFullYear() + '-' + ((myDate.getMonth()+1) < 10 ? "0" : "") + (myDate.getMonth()+1) + '-' + (myDate.getDate()<10?"0":"")+myDate.getDate());
+       $('#InputPubDate2').val(myDate.getFullYear() + '-' + ((myDate.getMonth()+1) < 10 ? "0" : "") + (myDate.getMonth()+1) + '-' + (myDate.getDate()<10?"0":"")+myDate.getDate());
+        {% if request_method == 'get' %}
+
+        {% elif request_method == 'post' %}
+            filterpage();
+        {% endif %}//如果请求方法是post,这里的请求方法是从后台传过来的,那么就执行函数
+
+        $('tbody tr').click(function () {
+            selectcheck(this)
+        });//鼠标单击选中
+
+        $('tbody tr').dblclick(function () {
+            aid = $(this).find("th input:checkbox").attr('aid')
+            window.location.href="{% url 'backend:create_article' %}?article_id=" + aid;//跳转到指定页面,并加载指定文章内容
+        });
+   });//文档加载完毕,执行的操作
+
+    function CheckAllToggle(ele){
+       if(ele.checked){//把它下面所有的博文都全选
+            $("tbody input:checkbox").prop("checked",true);
+       }else{
+            $("tbody input:checkbox").prop("checked",false);
+       }
+    };//全选和全不选的效果实现,prop是JQ属性操作
+
+    function AllDate(ele) {
+        if ($(ele).prev().val()){
+            $(ele).prev().val('')
+            $(ele).text('当前')
+        }else {
+            $(ele).prev().val(myDate.getFullYear() + '-' + ((myDate.getMonth()+1) < 10 ? "0" : "") + (myDate.getMonth()+1) + '-' + (myDate.getDate()<10?"0":"")+myDate.getDate())
+            $(ele).text('所有')
+        };
+    };//当前时间和所有时间段切换,注意这里$(ele)的用法,prev是上一个元素
+
+    function selectcheck(ele) {
+        if($(ele).find("th input:checkbox").prop('checked')){//判断checkbox是否checked返回true或者false
+            $(ele).find("th input:checkbox").prop('checked', false)
+        }else {
+            $(ele).find("th input:checkbox").prop('checked', true)
+        }
+    };//点击行选中checkbox
+
+    function filterpage() {//过滤文章,使用post方法
+        $('#InputName2').val("{{ author_id }}")
+        $('#InputPubDate2').val("{{ published_date }}")
+        $('#InputModDate2').val("{{ modify_date }}")
+        $('#InputCon').val("{{ searchkey }}")
+        $('#InputCate').val("{{ category_id }}")
+        $('.pagination a').attr({'href': 'javascript:void(0);'})
+        $('.pagination a').click(function () {
+            request_page = $(this).attr('pagenum')
+            if(request_page == 'prev'){
+                request_page = parseInt($('#cutpage ul.pagination li.active a').attr('pagenum')) - 1
+            }else if(request_page == 'next'){
+                request_page = parseInt($('#cutpage ul.pagination li.active a').attr('pagenum')) + 1
+            }
+            $('#myfilter input[name=page]').val(request_page)
+            $('#myfilter').submit()
+        });//每点击一次页数,都post提交一次
+    }//end function filterpage
+
+    function FindChecked() {
+        arr = []
+        $('tbody input:checkbox').each(function() {
+            if($(this).prop("checked")){
+                arr.push($(this).attr('aid'))
+            };
+        });
+        return arr
+    };
+
+    function DeleteSelect() {
+        //删除选择的项
+        arr_aid = FindChecked()
+        if ((arr_aid).length == 0){
+            alert("没有选择的对象,请确认!");
+        }else {
+            if(confirm("请再次确认是否要删除?!")){
+                $.post("{% url 'backend:option_delete' %}", {
+                    'delete_objs': arr_aid,
+                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+                    }, function (callback) {
+                        alert(callback);
+                        window.location.reload();
+                })
+            }else {
+                return false
+            }
+        };
+    };//end function DeleteSelect
+
+    function ChangeCate(ele) {
+        //改变选中项的分类
+        cid = $(ele).attr('value')
+        arr_aid = FindChecked()
+        if ((arr_aid).length == 0){
+            alert("没有选择的对象,请确认!");
+        }else {
+            if(!cid){
+                return false
+            }else {
+                if(confirm("请再次确认是否要修改分类?!")){
+                    $.post("{% url 'backend:option_changecate' %}", {
+                        'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+                        'cid': cid,
+                        'arr_objs': arr_aid,
+                    }, function (callback) {
+                        alert(callback)
+                        window.location.reload();
+                    })
+                }else {
+                    return false;
+                };//end if post
+            };//end else cid
+        };//end else arr_aid
+    };
+</script>
+{% endblock %}

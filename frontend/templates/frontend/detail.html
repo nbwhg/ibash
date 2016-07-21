@@ -1,0 +1,305 @@
+{% extends 'frontend/index.html' %}
+
+{% block urlopentype %}_self{% endblock %}
+{% block keywords %}{{ article.tags }}{% endblock %}
+{% block description %}{{ article.description }}{% endblock %}
+{% block title %}iBash,爱运维--{{ article.title }}{% endblock %}
+
+{% block main-box %}
+    <div class="bottommargin" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+        <div class="single-post nobottommarin">
+            <div class="entry clearfix">
+                <div class="entry-title">
+                    <h2>{{ article.title }}</h2>
+                </div>
+                <p class="">
+                    <span class="glyphicon glyphicon-calendar"></span>&nbsp;{{ article.modify_date }}&nbsp;
+                    <span class="glyphicon glyphicon-user"></span>&nbsp;{{ article.author.name }}&nbsp;
+                    <span class="glyphicon glyphicon-menu-hamburger"></span>&nbsp;{% for cate in article.categories.all %}<a href="{% url 'frontend:index_cate' cate.url %}" target="_self">{{ cate.name }}</a>&nbsp;&nbsp;{% endfor %}
+                    <span class="glyphicon glyphicon-comment"></span>&nbsp;{{ article.comments_set.count }}&nbsp;<a href="javascript:void(0);" onclick="replycomment(this, 0)">评论</a>&nbsp;
+                    <span class="glyphicon glyphicon-eye-open"></span>&nbsp;{{ article.articleviews.views }}&nbsp;浏览&nbsp;
+                </p>
+                <div id="primary" class="entry-content notopmargin">
+                    {{ article.articledetail.content|safe }}
+                    <div class="style-msg2 sigle_copy" style="background-color: #d9edf7">
+                        <div id="forreply" class="msgtitle">如无特殊说明，文章均为本站原创，转载请注明出处</div>
+                        <div class="sb-msg">
+                            <ul>
+                                <li>转载请注明来源：<a title="" data-toggle="tooltip" data-placement="top" data-hover="{{ article.title }}" href="{% url 'frontend:article_detail' article.id %}" data-original-title="{{ article.title }}">{{ article.title }}</a></li>
+                                <li>本文永久连接地址: http://ibash.cc{% url 'frontend:article_detail' article.id %}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="comments" class="comments-area">
+        <div id="respond" class="comment-respond">
+            <h5><span class="glyphicon glyphicon-edit"></span>&nbsp;&nbsp;发表评论</h5>
+            <form id="commentform" class="form-horizontal" method="post" action="/frontend">
+                {% csrf_token %}
+                <div class="form-group">
+                    <div class="col-sm-5">
+                        <input type="email" class="form-control" id="inputEmail3" placeholder="邮箱" name="email" >
+                    </div>
+                    <label for="inputEmail3" class="control-label">邮箱</label>
+                    <div class="emailerror"><span class="glyphicon glyphicon-remove-sign"></span><span class="errorinfo"></span></div>
+                    <div class="emailsuccess"><span class="glyphicon glyphicon-ok-sign"></span><span class="successinfo"></span></div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" id="inputNickname" placeholder="昵称" name="nickname" required>
+                    </div>
+                    <label for="inputNickname" class="control-label">昵称</label>
+                    <div class="nameerror"><span class="glyphicon glyphicon-remove-sign"></span><span class="errorinfo"></span></div>
+                    <div class="namesuccess"><span class="glyphicon glyphicon-ok-sign"></span><span class="successinfo"></span></div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-8">
+                        <textarea id="mytextarea" class="form-control" rows="5" style="resize: none;" name="comment"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="inputvcode" placeholder="点击获取验证码" name="vcode">
+                    </div>
+                    <label for="inputvcode" class="control-label">验证码</label>
+                    <div id="vcodeerror"><span class="glyphicon glyphicon-remove-sign"></span><span class="vcodeinfo"></span></div>
+                    <div id="vcodesuccess"><span class="glyphicon glyphicon-ok-sign"></span><span class="vcodeinfo"></span></div>
+                </div>
+                <div class="form-group" id="vcodeimg">
+                    <div class="col-sm-6">
+                        <img src="" alt="验证码" /><span style="color: orangered;">&nbsp;&nbsp;点击图片刷新</span>
+                    </div>
+                </div>
+                <button type="submit" id="submitcomment" class="btn btn-primary">提交评论</button>&nbsp;&nbsp;
+                <div id="submiterror"><span class="glyphicon glyphicon-remove-sign"></span><span class="submitinfo"></span></div>
+                <div id="submitsuccess"><span class="glyphicon glyphicon-ok-sign"></span><span class="submitinfo"></span></div>
+            </form>
+        </div><!--评论区域-->
+
+        <div id="comment-show">
+        </div>
+    </div>
+{% endblock %}
+
+{% block jscode %}
+    <script>
+        tinymce.init({
+            selector:'#mytextarea',
+            theme: "modern",
+            statusbar: false,
+            schema: 'html5',
+            language: 'zh_CN',
+            plugins: [
+              'advlist autolink link image lists charmap print preview hr anchor pagebreak spellchecker',
+              'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
+              'save table contextmenu directionality emoticons template paste textcolor'
+            ],
+            menubar: false,
+            toolbar: 'styleselect | insertfile undo redo | bullist numlist | preview fullpage | forecolor emoticons',
+//             setup : function(ed) {
+//                 ed.on('init', function() {
+//                     $(ed.getBody()).on('focus', function(e) {
+//                         var activeEditor = tinymce.activeEditor;
+//                         var editBody = activeEditor.getBody();
+//                         activeEditor.selection.select(editBody);
+//                         var text = activeEditor.selection.getContent( {'format': 'text'} );
+//                         if(text == '评论内容不能少于5个字符,请重新输入') {
+//                             tinyMCE.activeEditor.setContent('');//重置内容
+//                         ;
+//                     );
+//                 );
+//             ,//tinymce事件配置,这里为鼠标移入事件
+        }); //tinymce配置部分
+
+        $(function () {
+            ShowComments();//显示评论
+
+            $('#inputvcode').one("focus", function () {
+                $('#vcodeerror').css({'display': 'inline-block'})
+                $('#vcodeerror span.vcodeinfo').html('请输入验证码')
+                $('#vcodeimg').css({'display': 'block'})
+                ShowVerCode();
+            });//验证码输入框获取焦点时的操作,只执行一次
+            $('#vcodeimg img').click(function () {
+                SubmitVcode();//每次刷新图片,提交一个POST,删除后台无效的验证码
+                ShowVerCode();
+            });//点击验证码图片刷新
+            $('#inputvcode').keyup(function () {
+                if($('#inputvcode').val().length >=5 ) {
+                    SubmitVcode();
+                };
+            });//当验证码输入框keyup时的操作
+
+            $('#submitcomment').click(function () {
+                if($('#respond span.pname').length > 0){
+                    commitform('reply', $('#respond span.pname').attr('cid'), $('#respond span.pname').text());
+                }else{
+                    commitform('comment', 0, null);
+                };
+            });//表单验证并提交
+            $('#commentform').submit(function () {
+                return false
+            });//阻止表单提交
+
+        });
+
+        $(window).unload(function () {
+            SubmitVcode();
+        });//当页面刷新或者关闭时提交验证码
+
+
+        function commitform(commit_type, pid, parentname) {
+            SubmitVcode();
+            //验证邮箱和昵称
+            var reg = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/;
+            if(!$('#inputEmail3').val()){
+                $('div.emailerror').css({'display': 'inline-block'});
+                $('div.emailsuccess').css({'display': 'none'});
+                return false
+            }else if(!reg.test($('#inputEmail3').val())){
+                $('div.emailerror').css({'display': 'inline-block'});
+                $('div.emailsuccess').css({'display': 'none'});
+                return false
+            }else if(!$('#inputNickname').val()){
+                $('div.emailerror').css({'display': 'none'});
+                $('div.emailsuccess').css({'display': 'inline-block'});
+                $('div.nameerror').css({'display': 'inline-block'});
+                $('div.namesuccess').css({'display': 'none'});
+                return false
+            }else if(!$('#inputvcode').val()){
+                $('div.nameerror').css({'display': 'none'});
+                $('div.namesuccess').css({'display': 'inline-block'});
+                $('#vcodeerror').css({'display': 'inline-block'})
+                $('#vcodeerror span.vcodeinfo').html('请输入验证码')
+                return false
+            };
+            //下面四句话是获取tinymce中的纯文本内容
+            var activeEditor = tinymce.activeEditor;
+            var editBody = activeEditor.getBody();
+            activeEditor.selection.select(editBody);
+            var text = activeEditor.selection.getContent( {'format': 'text'} );
+            if(text.trim().length < 5) {//评论内容过少则验证不通过
+                tinyMCE.activeEditor.setContent('评论内容不能少于5个字符,请重新输入');
+                tinymce.activeEditor.selection.select(tinymce.activeEditor.getBody())
+                return false;
+            }else {
+                $.post("{% url 'frontend:comments' article.id %}", {
+                    'comment': tinymce.activeEditor.getContent(),
+                    'vcode': $('#inputvcode').val(),
+                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+                    'nickname': $('#inputNickname').val(),
+                    'email': $('#inputEmail3').val(),
+                    'pid': pid,
+                }, function(callback){
+                    if(callback == '1' || callback == '2'){
+                        $('#submitsuccess').css({'display': 'none'});
+                        $('#submiterror').css({'display': 'inline-block'});
+                        $('#submiterror span.submitinfo').text("评论失败,重试");
+                    }else{
+                        callback = JSON.parse(callback)
+                        if (commit_type == 'comment') {
+                            html_elm = CommentElement(callback, commit_type, 'top');
+                            $('#comment-show').prepend(html_elm)
+                        }else {
+                            html_elm = CommentElement(callback, commit_type, parentname);
+                            $('#comment-show div.comment-level[cid=' + callback.pid + ']').append(html_elm)
+                        }
+                        $('#submiterror').css({'display': 'none'})
+                        $('#submitsuccess').css({'display': 'inline-block'});
+                        $('#submitsuccess span.submitinfo').text("评论成功");
+                        $('div.nameerror').css({'display': 'none'});
+                        $('div.emailerror').css({'display': 'none'});
+                        $('div.namesuccess').css({'display': 'inline-block'});
+                        $('div.emailsuccess').css({'display': 'inline-block'});
+                    };//回调数据处理
+                });//post提交表单数据
+            };//提交数据
+        }
+        function ShowComments() {
+            $.get("{% url 'frontend:comments' article.id %}", function (data) {
+                data = JSON.parse(data)
+                $.each(data, function(i, n) {
+                    html_elm = CommentElement(n, 'comment', 'top')
+                    $('#comment-show').prepend(html_elm)//prepend在内部的开始处插入元素
+                    if($.isEmptyObject(n.children) == false){
+                        ParseComm(n.children, n.nickname)
+                    }//end if如果儿子有儿子,就去递归
+                });//end each遍历列表
+            });//end get通过ajax的get方法获取评论
+        }//end function ShowComments
+
+        function ParseComm(ChildData, parentname) {
+            $.each(ChildData, function (i, n) {
+                html_child_elem = CommentElement(n, 'reply', parentname)
+                $('#comment-show div.comment-level[cid=' + n.pid + ']').append(html_child_elem)
+                if($.isEmptyObject(n.children) == false){
+                    ParseComm(n.children, n.nickname)
+                };//end if如果儿子还有儿子则递归
+            })//end each遍历儿子列表
+        }//end function ParseComm 递归评论
+
+        function CommentElement(comm, commtype, parentname) {
+            if(commtype == 'comment'){
+                comment = comm.comment
+            }else {
+                comment = '回复@' + parentname + ': ' + comm.comment
+            }
+            return html_eml='<div class="comment-level" cid="' + comm.id + '"><!--层级评论-->' +
+                '<div class="comment-box"><!--评论信息-->' +
+                '<p>' +
+                    '<span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;<span class="nn">' + comm.nickname + '</span>&nbsp;&nbsp;' +
+                    '<span class="glyphicon glyphicon-globe"></span>&nbsp;&nbsp;' + comm.client_type + '&nbsp;&nbsp;' +
+                    '<span class="glyphicon glyphicon-calendar"></span>&nbsp;&nbsp;' + comm.published_date + '&nbsp;&nbsp;' +
+                '</p>' +
+                '<p class="comment-content">' + comment + '</p>' +
+                '<div class="text-muted comment-comment reply"><a href="javascript:void(0);" onclick="replycomment(this,'+ comm.id +')"><span class="glyphicon glyphicon-comment"></span>&nbsp;回复&nbsp;</a></div>' +
+                '</div>' +
+            '</div><!--评论展示-->'
+        };//拼接评论
+
+        function ShowVerCode() {
+            $.get("{% url 'frontend:vcode' %}", function (data) {
+                $('#vcodeimg img').attr({src: '/static/img/vcode/' + data})
+            });
+        };//显示验证码图片
+
+        function SubmitVcode() {
+            $.post("{% url 'frontend:vcode' %}", {
+                        'name': $('#vcodeimg img').attr('src'),
+                        'inputvcode': $('#inputvcode').val(),
+                        'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+                    }, function (data){
+                data = JSON.parse(data)
+                if(data == 0){
+                    $('#vcodesuccess').css({'display': 'inline-block'});
+                    $('#vcodesuccess span.vcodeinfo').text("验证成功");//显示成功信息
+                    $('#vcodeerror').css({'display': 'none'});//隐藏错误信息
+                    $('#vcodeerror span.vcodeinfo').text();//移除错误信息
+                    $('#inputvcode').attr('disabled', 'true');//禁用输入框,只读还有事件,禁用不会提交表单
+                    $('#vcodeimg img').unbind('click');//移除切换图片的事件
+                    $('#inputvcode').unbind('keyup');//移除输入框失去焦点提交事件
+                    $('#vcodeimg').css({'display': 'none'});//隐藏验证码
+                }else {
+                    $('#inputvcode').attr("value", "");//删除输入框的内容
+                    $('#vcodeerror span.vcodeinfo').html('验证码错误,重新刷新图片,获取新的验证码');//重置错误信息
+                };
+            });
+        };//提交验证码
+
+        function replycomment(obj, pid) {
+            obj.href = "#forreply"
+            if(pid == 0){
+                reply_comm_elm = '<span class="glyphicon glyphicon-edit"></span>&nbsp;&nbsp;发表评论'
+            }else {
+                pname = $('div[cid=' + pid + '] p:first span.nn').text()
+                reply_comm_elm = '<p style="color: red;"><span class="glyphicon glyphicon-edit"></span>&nbsp;&nbsp;回复@&nbsp;<span class="pname" cid="' + pid + '">' + pname + '</span></p>'
+            }
+            $('#respond h5').html(reply_comm_elm);
+            return false
+        };//设置回复跳转
+    </script>
+{% endblock %}

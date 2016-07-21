@@ -1,0 +1,111 @@
+{% extends 'backend/article_manage.html' %}
+
+{% block title %}
+<div style="color: #FF6C60"><h3>已删除的博文</h3></div>
+{% endblock %}
+
+{% block recovery%}
+<button type="button" class="btn btn-info" onclick="recoveryarticle()"> 恢复选中文章 </button>
+{% endblock %}
+
+{% block js-area %}
+<script>
+    var myDate = new Date();
+    $(function () {
+        $('form').attr({"action": "{% url 'backend:already_delete_article' %}"});
+
+        $('.ibash-date').daterangepicker({ singleDatePicker: true });//日历效果
+        $('#InputModDate2').val(myDate.getFullYear() + '-' + ((myDate.getMonth()+1) < 10 ? "0" : "") + (myDate.getMonth()+1) + '-' + (myDate.getDate()<10?"0":"")+myDate.getDate());
+        $('#InputPubDate2').val(myDate.getFullYear() + '-' + ((myDate.getMonth()+1) < 10 ? "0" : "") + (myDate.getMonth()+1) + '-' + (myDate.getDate()<10?"0":"")+myDate.getDate());
+        {% if request_method == 'get' %}
+
+        {% elif request_method == 'post' %}
+            filterpage();
+        {% endif %}//如果请求方法是post,这里的请求方法是从后台传过来的,那么就执行函数
+
+        $('tbody tr').click(function () {
+            selectcheck(this)
+        });
+
+        $('tbody tr').dblclick(function () {
+            aid = $(this).find("th input:checkbox").attr('aid')
+            window.location.href="{% url 'backend:create_article' %}?article_id=" + aid;//跳转到指定页面,并加载指定文章内容
+        });
+    });
+
+    function CheckAllToggle(ele){
+       if(ele.checked){//把它下面所有的博文都全选
+            $("tbody input:checkbox").prop("checked",true);
+       }else{
+            $("tbody input:checkbox").prop("checked",false);
+       }
+    };//全选和全不选的效果实现,prop是JQ属性操作
+
+    function AllDate(ele) {
+        if ($(ele).prev().val()){
+            $(ele).prev().val('')
+            $(ele).text('当前')
+        }else {
+            $(ele).prev().val(myDate.getFullYear() + '-' + ((myDate.getMonth()+1) < 10 ? "0" : "") + (myDate.getMonth()+1) + '-' + (myDate.getDate()<10?"0":"")+myDate.getDate())
+            $(ele).text('所有')
+        };
+    };//当前时间和所有时间段切换,注意这里$(ele)的用法,prev是上一个元素
+
+    function selectcheck(ele) {
+        if($(ele).find("th input:checkbox").prop('checked')){//判断checkbox是否checked返回true或者false
+            $(ele).find("th input:checkbox").prop('checked', false)
+        }else {
+            $(ele).find("th input:checkbox").prop('checked', true)
+        }
+    };//点击行选中checkbox
+
+        function filterpage() {//过滤文章,使用post方法
+        $('#InputName2').val("{{ author_id }}")
+        $('#InputPubDate2').val("{{ published_date }}")
+        $('#InputModDate2').val("{{ modify_date }}")
+        $('#InputCon').val("{{ searchkey }}")
+        $('#InputCate').val("{{ category_id }}")
+        $('.pagination a').attr({'href': 'javascript:void(0);'})
+        $('.pagination a').click(function () {
+            request_page = $(this).attr('pagenum')
+            if(request_page == 'prev'){
+                request_page = parseInt($('#cutpage ul.pagination li.active a').attr('pagenum')) - 1
+            }else if(request_page == 'next'){
+                request_page = parseInt($('#cutpage ul.pagination li.active a').attr('pagenum')) + 1
+            }
+            $('#myfilter input[name=page]').val(request_page)
+            $('#myfilter').submit()
+        });//每点击一次页数,都post提交一次
+    }//end function filterpage
+
+    function FindChecked() {
+        arr = []
+        $('tbody input:checkbox').each(function() {
+            if($(this).prop("checked")){
+                arr.push($(this).attr('aid'))
+            };
+        });
+        return arr
+    };
+    
+    function recoveryarticle() {
+        arr_aid = FindChecked()
+        if ((arr_aid).length == 0){
+            alert("没有选择的对象,请确认!");
+        }else {
+            if(confirm("请再次确认是否要删除?!")){
+                $.post("{% url 'backend:recovery_article' %}", {
+                    'delete_objs': arr_aid,
+                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+                    }, function (callback) {
+                        alert(callback);
+                        window.location.reload();
+                });
+            }else {
+                return false
+            }
+        };
+    }
+
+</script>
+{% endblock %}

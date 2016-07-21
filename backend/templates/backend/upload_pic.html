@@ -1,0 +1,97 @@
+{% extends 'backend/base.html' %}
+
+{% block main-area %}
+<label class="control-label">上传/预览 图片</label>
+<input id="input-44" name="input44[]" type="file" multiple class="file-loading">
+<div id="errorBlock" class="help-block"></div>
+
+<div style="color: #FF6C60"><h4>已上传图片列表</h4></div>
+<table class="table table-striped table-bordered table-hover">
+    <thead>
+        <tr><th><input type="checkbox" id="sel-all" onclick="CheckAllToggle(this)"> #</th><th>缩略图</th><th>上传时间</th><th>图片大小</th><th>图片链接</th></tr>
+    </thead>
+    <tbody>
+        {% for pic in pic_list %}
+            <tr><th scope="row"><input type="checkbox"> {{ forloop.counter }}</th>
+                <td><img src="{{ pic.name }}" style="height: 60px"/></td>
+                <td>{{ pic.time }}</td>
+                <td ty="size">{{ pic.picsize }}</td>
+                <td ty="name">{{ pic.name}}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block js-area %}
+<script src="/static/js/fileinput/plugins/canvas-to-blob.min.js" type="text/javascript"></script>
+<script src="/static/js/fileinput/plugins/sortable.js" type="text/javascript"></script>
+<script src="/static/js/fileinput/plugins/purify.js" type="text/javascript"></script>
+<script src="/static/js/fileinput/fileinput.min.js" type="text/javascript"></script>
+<script src="/static/js/fileinput/theme.js" type="text/javascript"></script>
+<script src="/static/js/fileinput/locales/zh.js" type="text/javascript"></script>
+<script>
+$(document).on('ready', function() {
+    $("#input-44").fileinput({
+        overwriteInitial: false,
+        uploadUrl : "{% url 'backend:upload_pic' %}",
+        deleteUrl: "",
+        uploadAsync: true,
+        maxFileSize: 2000,
+        maxFileCount: 5,
+        initialCaption: "上传图片",
+        language: 'zh',
+    });
+    $('#input-44').on('fileuploaded', function (event, data, previweID, index) {
+        var form = data.form, files = data.files, extra = data.extra,
+                response = data.reponse, reader = data.reader;
+    });
+
+
+    $('tbody tr').click(function () {
+        selectcheck(this)
+    });//鼠标单击选中
+
+    //$('tbody tr').dblclick(function () {
+    //    $('div.file-input div.file-initial-thumbs').html('')
+    //    ele = element($(this).find('td[ty="name"]').text(), $(this).find('td[ty="size"]').text())
+    //    console.log(ele)
+    //    $('div.file-input div.file-initial-thumbs').append(ele)
+    //});
+});
+
+
+    function CheckAllToggle(ele){
+       if(ele.checked){//把它下面所有的博文都全选
+            $("tbody input:checkbox").prop("checked",true);
+       }else{
+            $("tbody input:checkbox").prop("checked",false);
+       }
+    };//全选和全不选的效果实现,prop是JQ属性操作
+
+    function selectcheck(ele) {
+        if($(ele).find("th input:checkbox").prop('checked')){//判断checkbox是否checked返回true或者false
+            $(ele).find("th input:checkbox").prop('checked', false)
+        }else {
+            $(ele).find("th input:checkbox").prop('checked', true)
+        }
+    };//点击行选中checkbox
+
+    function element(picname, picsize) {
+        return '<div class="file-preview-frame file-preview-initial" id="preview-1468316568186-init_0" data-fileindex="init_0" data-template="image"><div class="kv-file-content">' +
+        '<img src="' + picname + '" class="kv-preview-data file-preview-image" title="" alt="" style="width:auto;height:160px;">' +
+        '</div><div class="file-thumbnail-footer">' +
+        '<div class="file-footer-caption" title="' + picname +'">'+ picname +' <br><samp>('+ picsize +')</samp></div>' +
+        '<div class="file-thumb-progress hide"><div class="progress">' +
+        '<div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%;">' + 0% +
+        '</div>' +
+        '</div></div> <div class="file-actions">' +
+        '<div class="file-footer-buttons">' +
+        '<button type="button" class="kv-file-remove btn btn-xs btn-default" title="删除文件" data-url="" data-key="1"><i class="glyphicon glyphicon-trash text-danger"></i></button>' +
+        '<button type="button" class="kv-file-zoom btn btn-xs btn-default" title="查看详情"><i class="glyphicon glyphicon-zoom-in"></i></button>     </div>' +
+        '<span class="file-drag-handle drag-handle-init text-info" title="Move / Rearrange"><i class="glyphicon glyphicon-menu-hamburger"></i></span>' +
+        '<div class="file-upload-indicator" title=""></div>' +
+        '<div class="clearfix"></div> </div> </div> </div>'
+    };
+</script>
+{% endblock %}

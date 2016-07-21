@@ -1,0 +1,149 @@
+{% extends 'backend/base.html' %}
+
+{% block main-area %}
+<div style="color: #FF6C60"><h3>添加删除友情链接</h3></div>
+{% csrf_token %}
+
+<table class="table table-striped table-bordered table-hover">
+    <thead>
+        <tr><th><input type="checkbox" id="sel-all" onclick="CheckAllToggle(this)"> #</th><th>链接名称</th><th>链接地址</th><th>负责人</th><th>负责人Email</th><th>负责人QQ</th><th>加入时间</th><th>是否正常</th></tr>
+    </thead>
+    <tbody>
+        {% for link in links %}
+            <tr><th scope="row"><input type="checkbox" lid="{{ link.id }}"> {{ forloop.counter }}</th><td>{{ link.name }}</td><td>{{ link.url }}</td><td>{{ link.contact }}</td><td>{{ link.contact_email }}</td><td>{{ link.contact_qq }}</td><td>{{ link.join_date }}</td><td>{% if not link.status %}<span class="glyphicon glyphicon-ok" style="color: forestgreen;"></span>{% else %}<span class="glyphicon glyphicon-remove" style="color: orangered"></span>{% endif %}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<button type="button" class="btn btn-info" onclick="del_and_reco()"> 删除/恢复 </button>
+
+<div id="filter-content">
+    <form class="form-inline" id="">
+        <div class="form-group">
+            <label for="InputName">链接名称 : </label>
+            <input type="text" class="form-control input-sm" id="InputName" placeholder="链接名称" name="linkname">
+        </div>
+        <div class="form-group">
+            <label for="InputAdd">链接地址 : </label>
+            <input type="url" class="form-control input-sm" id="InputAdd" placeholder="链接地址" name="linkaddress">
+        </div>
+        <div class="form-group">
+            <label for="InputContact">负责人 : </label>
+            <input type="text" class="form-control input-sm" id="InputContact" placeholder="负责人" name="linkcontact">
+        </div>
+        <div class="form-group">
+            <label for="INputEmail">联系邮箱 : </label>
+            <input type="email" class="form-control input-sm" id="INputEmail" placeholder="联系邮箱" name="linkemail">
+        </div>
+        <div class="form-group">
+            <label for="InputQQ">联系QQ : </label>
+            <input type="text" class="form-control input-sm" id="InputQQ" placeholder="联系QQ" name="linkQQ">
+        </div>
+        <input type="hidden" id="InputType" value="create" /><!--存放提交的类型,默认是创建-->
+        <input type="hidden" id="InputLid" value="0" /><!--存放提交的链接的ID,如果是修改已有链接,这里存储的值才有用-->
+        <button type="button" class="btn btn-info input-sm" id="option_link" onclick="create_link()"> 添加 链接 </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block js-area %}
+<script>
+    $(function () {
+        $('tbody tr').click(function () {
+            selectcheck(this)
+        });//鼠标单击
+
+        $('tbody tr').dblclick(function () {
+            lid = $(this).find("th input:checkbox").attr('lid')
+            window.location.href="{% url 'backend:links' %}?link_id=" + lid;//跳转到指定页面,并加载指定内容
+        });//鼠标双击
+        
+        {% if link_change %}
+            $('#InputName').val("{{ link_change.name }}")
+            $('#InputAdd').val("{{ link_change.url }}")
+            $('#InputContact').val("{{ link_change.contact }}")
+            $('#INputEmail').val("{{ link_change.contact_email }}")
+            $('#InputQQ').val("{{ link_change.contact_qq }}")
+            $('#InputType').val("update")
+            $('#InputLid').val("{{ link_change.id }}")
+            $('#option_link').text(" 更新 链接 ")
+            $('tbody tr th input:checkbox[lid="{{ link_change.id }}"]').prop('checked', true);
+        {% endif %}
+    });
+
+    function CheckAllToggle(ele){
+       if(ele.checked){//全选
+            $("tbody input:checkbox").prop("checked",true);
+       }else{
+            $("tbody input:checkbox").prop("checked",false);
+       }
+    };//全选和全不选的效果实现,prop是JQ属性操作
+
+    function selectcheck(ele) {
+        if($(ele).find("th input:checkbox").prop('checked')){//判断checkbox是否checked返回true或者false
+            $(ele).find("th input:checkbox").prop('checked', false)
+        }else {
+            $(ele).find("th input:checkbox").prop('checked', true)
+        }
+    };//点击行选中checkbox
+
+    function FindChecked() {
+        arr = []
+        $('tbody input:checkbox').each(function() {
+            if($(this).prop("checked")){
+                arr.push($(this).attr('lid'))
+            };
+        });
+        return arr
+    };//查找已选中的元素
+
+    function del_and_reco() {
+        link_id = FindChecked()
+        if ((link_id).length == 0){
+            alert("没有选择的对象,请确认!");
+        }else {
+            if(confirm("请再次确认是否要更新?!")){
+                $.post("{% url 'backend:links' %}", {
+                    'type': 'update_link',
+                    'obj_lists': link_id,
+                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+                    }, function (callback) {
+                        alert(callback);
+                        window.location.reload();
+                })
+            }else {
+                return false
+            };//end confirm
+        };
+    };//end function del_and_reco单纯的启用和停用链接
+
+    function create_link() {
+        if(!$('#InputName').val()){
+            alert("链接名称不能为空!")
+            return false;
+        }else if(!$('#InputAdd').val()){
+            alert("链接地址不能为空!")
+            return false;
+        }else if(!$('#INputEmail').val()){
+            alert("邮箱地址不能为空!")
+            return false;
+        }else{
+            $.post("{% url 'backend:links' %}", {
+                'type': 'create_link',
+                'linkid': $('#InputLid').val(),
+                'name': $('#InputName').val(),
+                'linkaddress': $('#InputAdd').val(),
+                'linkcontact': $('#InputContact').val(),
+                'linkemail': $('#INputEmail').val(),
+                'linkqq': $('#InputQQ').val(),
+                'linktype': $('#InputType').val(),
+                'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+            }, function (callback) {
+                alert(callback);
+                //window.location.reload();
+                window.location.href="{% url 'backend:links' %}";
+            });
+        };
+    };//end function create link创建或者提交链接
+</script>
+{% endblock %}

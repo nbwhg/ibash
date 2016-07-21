@@ -1,0 +1,15 @@
+tbody tr:hover {
+    color: #FF6C60;
+}
+
+#filter-content {
+    margin: 10px 0px 10px 0px;
+}
+
+.alldate {
+    cursor: pointer;
+}
+
+.comment-div {
+    border-bottom: 1px dashed #ff7800;
+}

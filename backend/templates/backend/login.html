@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="iBash">
+    <meta name="author" content="iBash">
+    <meta name="keyword" content="iBash">
+    <link rel="shortcut icon" href="/static/img/ibash.ico">
+    <title>iBash后台管理系统</title>
+    <!-- Bootstrap core CSS -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-reset.css" rel="stylesheet">
+    <!--external css-->
+    <link href="/static/font-awesome/css/font-awesome.css" rel="stylesheet" />
+    <!-- Custom styles for this template -->
+    <link href="/static/css/backend.css" rel="stylesheet">
+    <link href="/static/css/backend-responsive.css" rel="stylesheet" />
+
+</head>
+  <body class="login-body">
+    <div class="container">
+      <form class="form-signin" method="post" action="{% url 'backend:login' %}">{% csrf_token %}
+        <h2 class="form-signin-heading">iBash后台管理系统</h2>
+        {% if login_info %}
+            <div style="margin: 20px 0px 10px 0px;color: orangered">
+                 <span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>
+                {{ login_info }}
+            </div>
+        {% endif %}
+        <div class="login-wrap">
+            <input type="email" class="form-control" placeholder="Email address" name="email" required autofocus>
+            <input type="password" class="form-control" placeholder="Password" name="password" required>
+            <button class="btn btn-lg btn-login btn-block" type="submit">登 录</button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

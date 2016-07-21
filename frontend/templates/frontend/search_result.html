@@ -1,0 +1,51 @@
+{% extends 'frontend/index_base.html' %}
+{% load frontend_extra %}<!--加载自定义的tag filter-->
+
+{% block urlopentype %}_blank{% endblock %}
+{% block keywords %}Linux运维,运维开发,数据库,Mysql,DBA,云计算{% endblock %}
+{% block description %}Linux运维,运维开发,数据库,Mysql,DBA,云计算{% endblock %}
+{% block title %}iBash,爱运维--Linux运维,Mysql,开发,云计算,数据库,IT{% endblock %}
+
+{% block article-category %}
+    {% for category in categories %}
+        {% if category.type == 'N' %}
+            <li class=""><a href="{% url 'frontend:index_cate' category.url %}" target="_self">{{ category.name }} </a></li>
+        {% endif %}
+    {% endfor %}
+{% endblock %}<!--博客分类-->
+
+{% block project-category %}
+    {% for category in categories %}
+        {% if category.type == 'P' %}
+            <li><a href="{% url 'frontend:index_cate' category.url %}" target="_self">{{ category.name }} </a></li>
+        {% endif %}
+    {% endfor %}
+{% endblock %}<!--专题分类-->
+
+{% block container %}
+{% for article in artilelist  %}
+<div class="comment-level">
+    <div class="comment-box">
+    <a href="{% url 'frontend:article_detail' article.id %}" target="_blank"><h4>{{ article.title|striptags|title|truncatechars:48 }}</h4></a>
+        <p class="text-muted">
+            <span class="glyphicon glyphicon-time" aria-hidden="true"></span>
+            最后修改时间 : {{ article.modify_date }}&nbsp;&nbsp;&nbsp;&nbsp;
+            <span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;{{ article.author }}&nbsp;&nbsp;
+            <span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span>
+            归类 : {% for cate in article.categories.all %}{{ cate.name }}&nbsp;&nbsp;{% endfor %}&nbsp;&nbsp;&nbsp;&nbsp;
+            <span class="glyphicon glyphicon-comment" aria-hidden="true"></span>
+            评论 : {{ article.comments_set.count }}
+            <small class="pull-right">点击量 :&nbsp;&nbsp;<span class="badge">{{ article.articleviews.views }}</span></small>
+        </p>
+        <p class="text-muted">{{ article.articledetail.content|striptags|truncatechars:100 }}</p>
+        <p class="text-muted article-tags"><span class="glyphicon glyphicon-tags" aria-hidden="true"></span>&nbsp;&nbsp;标签:&nbsp;&nbsp;
+            {% for tag in article.tags|custom_make_list %}
+                <span class="badge">{{ tag }}</span>
+            {% endfor %}
+        </p>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+{% block jscode %}
+{% endblock %}

@@ -1,0 +1,323 @@
+{% extends 'backend/base.html' %}
+
+{% block main-area %}
+{% csrf_token %}
+<!--state overview start-->
+<div class="row state-overview">
+<div class="col-lg-3 col-sm-6">
+  <section class="panel">
+      <div class="symbol terques">
+          <i class="icon-book"></i>
+      </div>
+      <div class="value">
+          <h1>{{ article_count }}</h1>
+          <p>博文量</p>
+      </div>
+  </section>
+</div>
+<div class="col-lg-3 col-sm-6">
+  <section class="panel">
+      <div class="symbol red">
+          <i class="icon-comments"></i>
+      </div>
+      <div class="value">
+          <h1>{{ comment_count }}</h1>
+          <p>评论量</p>
+      </div>
+  </section>
+</div>
+<div class="col-lg-3 col-sm-6">
+  <section class="panel">
+      <div class="symbol yellow">
+          <i class="icon-eye-open"></i>
+      </div>
+      <div class="value">
+          <h1>{{ view_count.views__sum }}</h1>
+          <p>浏览量</p>
+      </div>
+  </section>
+</div>
+<div class="col-lg-3 col-sm-6">
+  <section class="panel">
+      <div class="symbol blue">
+          <i class="icon-picture"></i>
+      </div>
+      <div class="value">
+          <h1>{{ pic_count }}</h1>
+          <p>图片量</p>
+      </div>
+  </section>
+</div>
+</div>
+<!--state overview end-->
+
+<div class="row">
+<div class="col-lg-8">
+    <!--custom chart start-->
+    <div id="cpu_pic" style="width: 100%; height: 480px;"></div>
+  <!--custom chart end-->
+</div>
+<div class="col-lg-4">
+  <!--new earning start-->
+    <div id="memory_pic" style="width: 100%; height: 240px;"></div>
+  <!--new earning end-->
+
+  <!--total earning start-->
+    <div id="disk_pic" style="width: 100%; height: 240px;"></div>
+  <!--total earning end-->
+</div>
+</div>
+{% endblock %}
+
+{% block js-area %}
+<script src="/static/js/echarts/echarts.min.js"></script>
+<script>
+
+    // 基于准备好的dom，初始化echarts实例
+    var myCpuChart = echarts.init(document.getElementById('cpu_pic'));
+    var myMemoryChart = echarts.init(document.getElementById('memory_pic'));
+    var myDiskChart = echarts.init(document.getElementById('disk_pic'));
+    // 使用刚指定的配置项和数据显示图表。
+    myCpuChart.setOption({
+        title: {//标题组件
+            text: 'CPU Load',//主标题文本
+            left: '10%',//grid 组件离容器左侧的距离; left 的值为'left','center','right'组件会根据相应的位置自动对齐
+        },
+        itemStyle: {
+            normal: {//normal选项是正常展示下的样式
+                // 阴影的大小
+                shadowBlur: 100,
+                // 阴影水平方向上的偏移
+                shadowOffsetX: 0,
+                // 阴影垂直方向上的偏移
+                shadowOffsetY: 0,
+                // 阴影颜色
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+            },
+            emphasis: {//emphasis是鼠标 hover 时候的高亮样式
+                shadowBlur: 200,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+        },
+        tooltip: {//提示框组件
+            trigger: 'axis',//坐标轴触发
+        },
+        legend: {
+            data: ['1 minutes', '5 minutes', '15 minutes']
+        },//图例组件
+        grid: {
+            left: '0%',
+            right: '5%',
+            bottom: '5%',
+            containLabel: true
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {show: true, title: '保存为图片'}
+            }
+        },
+        xAxis: {//直角坐标系 grid 中的 x 轴,单个 grid 组件最多只能放上下两个 x 轴
+            name: '时间',//坐标轴名称
+            nameLocation: 'end',//坐标轴名称位置
+            type: 'time',//坐标轴类型
+            splitLine: {//坐标轴在 grid 区域中的分隔线,默认显示
+                show: false
+            }
+        },
+        yAxis: {//直角坐标系 grid 中的 y 轴,单个 grid 组件最多只能放左右两个 y 轴
+            name: '数值',//坐标轴名称
+            nameLocation: 'end',//坐标轴名称位置
+            type: 'value',//数值轴,适用于连续数据
+            boundaryGap: [0, '100%'],//坐标轴两边留白策略,类目轴和非类目轴的设置和表现不一样
+            //非类目轴,包括时间 数值 对数轴,
+            // boundaryGap是一个两个值的数组,
+            // 分别表示数据最小值和最大值的延伸范围
+            // 可以直接设置数值或者相对的百分比,在设置 min 和 max 后无效
+            splitLine: {
+                show: false
+            }
+        },
+        dataZoom: [//缩放
+            {   // 这个dataZoom组件，默认控制x轴。
+                type: 'slider', // 这个 dataZoom 组件是 slider 型 dataZoom 组件,滑块
+                start: 70,      // 左边在 10% 的位置。
+                end: 100,         // 右边在 60% 的位置。
+            },
+            {   // 这个dataZoom组件，也控制x轴。
+                type: 'inside', // 这个 dataZoom 组件是 inside 型 dataZoom 组件,滚轮缩放
+                start: 10,      // 左边在 10% 的位置。
+                end: 60         // 右边在 60% 的位置。
+            }
+        ],
+        series: [
+            {//系列列表.每个系列通过 type 决定自己的图表类型
+                name: '1 minutes',//系列名称,用于tooltip的显示,legend 的图例筛选,在 setOption 更新数据和配置项时用于指定对应的系列
+                type: 'line',//折线
+                showSymbol: false,//是否显示 symbol,只有在 tooltip hover 的时候显示
+                hoverAnimation: true,//是否开启 hover 在拐点标志上的提示动画效果
+                //lineStyle: {
+                //    normal: {
+                //        color: '#2E8B57',
+                //    }
+                //},//设置线条颜色
+                data: [],//系列中的数据内容数组.数组项通常为具体的数据项
+            },
+            {//系列列表.每个系列通过 type 决定自己的图表类型
+                name: '5 minutes',//系列名称,用于tooltip的显示,legend 的图例筛选,在 setOption 更新数据和配置项时用于指定对应的系列
+                type: 'line',//折线
+                showSymbol: false,//是否显示 symbol,只有在 tooltip hover 的时候显示
+                hoverAnimation: true,//是否开启 hover 在拐点标志上的提示动画效果
+                data: [],//系列中的数据内容数组.数组项通常为具体的数据项
+            },
+            {//系列列表.每个系列通过 type 决定自己的图表类型
+                name: '15 minutes',//系列名称,用于tooltip的显示,legend 的图例筛选,在 setOption 更新数据和配置项时用于指定对应的系列
+                type: 'line',//折线
+                showSymbol: false,//是否显示 symbol,只有在 tooltip hover 的时候显示
+                hoverAnimation: true,//是否开启 hover 在拐点标志上的提示动画效果
+                data: [],//系列中的数据内容数组.数组项通常为具体的数据项
+            },
+        ]
+    });
+
+    myDiskChart.setOption({
+        title: {
+            text: '磁盘使用情况',
+            x: '60%'
+        },
+        //roseType: 'angle',
+        tooltip: {
+            trigger: 'item',
+            formatter: "{a} <br/>{b} : {c} ({d}%)"
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left',
+            data: ['已用','可用','其他']
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {show: true, title: '保存为图片'}
+            }
+        },
+        itemStyle: {
+            normal: {
+                shadowBlur: 200,
+                shadowOffsetX: 0,
+                shadowOffsetY: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+            },
+            emphasis: {
+                shadowBlur: 200,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+        },
+        series : [{
+            name: '磁盘使用情况',
+            type: 'pie',
+            radius: '55%',//饼图半径
+            center: ['50%', '60%'],
+            data:[
+                {value:546489649, name:'已用'},
+                {value:406051459, name:'可用'},
+                {value:48393008, name:'其他'},
+            ],
+            itemStyle: {
+                emphasis: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }]
+    });
+
+    myMemoryChart.setOption({
+        title: {
+            text: '内存使用情况',
+            x: '60%'
+        },
+        //roseType: 'angle',
+        tooltip: {
+            trigger: 'item',
+            formatter: "{a} <br/>{b} : {c} ({d}%)"
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left',
+            data: ['已用','可用','其他']
+        },
+        itemStyle: {
+            normal: {
+                shadowBlur: 200,
+                shadowOffsetX: 0,
+                shadowOffsetY: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+            },
+            emphasis: {
+                shadowBlur: 200,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {show: true, title: '保存为图片'}
+            }
+        },
+        series : [{
+            name: '内存使用情况',
+            type: 'pie',
+            radius: '55%',//饼图半径
+            center: ['50%', '60%'],
+            data:[
+                {value:2487240, name:'已用'},
+                {value:5440948, name:'可用'},
+                {value:0, name:'其他'},
+            ],
+            itemStyle: {
+                emphasis: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }]
+    });
+
+
+    $(function () {
+        myCpuChart.showLoading();
+        getcpuload();
+        timeTicket = setInterval(function () {
+            getcpuload()
+        }, 62000)
+    });
+
+    function getcpuload() {
+        $.post("{% url 'backend:load' %}", {
+            'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+        }, function(callback){
+            callback = JSON.parse(callback)
+            onedata = callback['oneminutes']
+            fivedata = callback['fiveminutes']
+            fifteendata = callback['fifteenminutes']
+            myCpuChart.hideLoading();
+            myCpuChart.setOption({
+                series: [
+                    {//系列列表.每个系列通过 type 决定自己的图表类型
+                        name: '1 minutes',//系列名称,用于tooltip的显示,legend 的图例筛选,在 setOption 更新数据和配置项时用于指定对应的系列
+                        data: onedata,//系列中的数据内容数组.数组项通常为具体的数据项
+                    },
+                    {//系列列表.每个系列通过 type 决定自己的图表类型
+                        name: '5 minutes',//系列名称,用于tooltip的显示,legend 的图例筛选,在 setOption 更新数据和配置项时用于指定对应的系列
+                        data: fivedata,//系列中的数据内容数组.数组项通常为具体的数据项
+                    },
+                    {//系列列表.每个系列通过 type 决定自己的图表类型
+                        name: '15 minutes',//系列名称,用于tooltip的显示,legend 的图例筛选,在 setOption 更新数据和配置项时用于指定对应的系列
+                        data: fifteendata,//系列中的数据内容数组.数组项通常为具体的数据项
+                    },
+                ]
+            })
+        });
+    };
+</script>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'backend/base.html' %}
+
+{% block main-area %}
+<div id="main-area">
+<form id="article_form" class="form-horizontal" method="post" action="{% url 'backend:create_article' %}">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="title" class="col-sm-1 control-label">文章标题</label>
+        <div class="col-sm-11">
+            <input type="text" class="form-control" id="title" placeholder="文章标题" name="title">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="article-description" class="col-sm-1 control-label">文章描述</label>
+        <div class="col-sm-11">
+            <input type="text" class="form-control" id="article-description" placeholder="文章描述" name="description">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="tags" class="col-sm-1 control-label">文章标签</label>
+        <div class="col-sm-11">
+            <input type="text" class="form-control" id="tags" placeholder="文章标签,以 | 分隔" name="tags">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-1 control-label">文章分类</label>
+            <div class="col-sm-11">
+                <select multiple size="4" class="form-control" name="category_id">
+                {% for category in categorys %}
+                    <option value="{{ category.id }}">{{ category }}</option>
+                {% endfor %}
+                </select>
+            </div>
+    </div>
+    <div class="form-group">
+        <label for="article_content" class="col-sm-1 control-label">文章正文</label>
+        <div class="col-sm-11">
+            <script id="editor" type="text/plain" style="height:500px;">
+            </script>
+            <textarea id="article_content" style="display: none">
+                {% if article_obj %}
+                    {{ article_obj.articledetail.content }}
+                {% endif %}
+            </textarea>
+        </div>
+    </div>
+    <input type="hidden" id="obj" value="create" /><!--标识文章是新创建的还是修改的-->
+    <div class="form-group">
+        <div class="col-sm-offset-1 col-sm-10">
+            <button type="submit" class="btn btn-default btn-primary">创建博文</button>
+        </div>
+    </div>
+</form>
+</div>
+{% endblock %}
+
+{% block js-area %}
+<script>
+    //实例化编辑器
+    //建议使用工厂方法getEditor创建和引用编辑器实例，如果在某个闭包下引用该编辑器，直接调用UE.getEditor('editor')就能拿到相关的实例
+    var ue = UE.getEditor('editor');
+
+    $(function () {
+        $('#article_form button').click(function () {
+            commitarticle()
+        });
+        $('#article_form').submit(function () {
+            return false
+        });
+
+        {% if article_obj %}
+            InsertArticleObj()
+        {% endif %}
+    });
+
+    function commitarticle() {
+        if(!$('#title').val()){
+            alert('文章标题不能为空!')
+            return false
+        }else if(!$('#article-description').val()){
+            alert('文章描述不能为空!')
+            return false
+        }else if(!$('#tags').val()){
+            alert('文章标签不能为空!')
+            return false
+        }else if($('#article_form select option:selected').length == 0){
+            alert('必须选择一个文章分类!')
+            return false
+        }else if(!UE.getEditor('editor').hasContents()){
+            alert('必须填写文章正文!')
+            return false
+        }else {
+            var category_arr = new Array()
+            $('#article_form select option:selected').each(function () {
+                category_arr.push(this.getAttribute('value'));
+            })
+            $.post("{% url 'backend:create_article' %}", {
+                'obj': $('#obj').val(),
+                'title': $('#title').val(),
+                'description': $('#article-description').val(),
+                'tags': $('#tags').val(),
+                'content': UE.getEditor('editor').getContent(),
+                'category_id': category_arr,
+                'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+            }, function (callback) {
+                $('#main-area').html('<h4>' + callback + '</h4>')
+            });
+        };
+    };//end function commitarticle表单验证并提交文章
+
+    function InsertArticleObj() {
+        $('#obj').val("{{ article_obj.id }}")
+        $('#title').val("{{ article_obj.title }}")
+        $('#article-description').val("{{ article_obj.description }}")
+        $('#tags').val("{{ article_obj.tags }}")
+        {% for cid in article_obj.categories.select_related %}
+            $('#article_form select option[value="{{ cid.id }}"]').attr({'selected': 'selected'})
+        {% endfor %}
+        ue.ready(function() {
+            ue.setContent($('#article_content').text());
+        });//ueditor编辑完的内容存储到数据库中,再取出来编辑,首先要把数据库的内容加载到一个隐藏的textarea中,然后使用该方法可以原样加载
+    };//end function InsertArticleObj如果有文章信息则加载文章信息
+</script>
+{% endblock %}

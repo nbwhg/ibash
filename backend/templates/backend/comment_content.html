@@ -1,0 +1,65 @@
+{% extends 'backend/base.html' %}
+
+{% block main-area %}
+    <div style="color: #FF6C60"><h3>评论内容</h3></div>
+    <form class="form-horizontal">
+        <div class="form-group comment-div">
+            <label class="col-sm-1 control-label">昵称</label>
+            <div class="col-sm-9">
+                <p class="form-control-static">{{ latest_comment.nickname }}</p>
+            </div>
+        </div>
+        <div class="form-group comment-div">
+            <label class="col-sm-1 control-label">邮箱</label>
+            <div class="col-sm-9">
+                <p class="form-control-static">{{ latest_comment.email }}</p>
+            </div>
+        </div>
+        <div class="form-group comment-div">
+            <label class="col-sm-1 control-label">客户端IP</label>
+            <div class="col-sm-9">
+                <p class="form-control-static">{{ latest_comment.client_ip }}</p>
+            </div>
+        </div>
+        <div class="form-group comment-div">
+            <label class="col-sm-1 control-label">浏览器类型</label>
+            <div class="col-sm-9">
+                <p class="form-control-static">{{ latest_comment.client_type }}</p>
+            </div>
+        </div>
+        <div class="form-group comment-div">
+            <label class="col-sm-1 control-label">留言日前</label>
+            <div class="col-sm-9">
+                <p class="form-control-static">{{ latest_comment.published_date }}</p>
+            </div>
+        </div>
+        <div class="form-group comment-div">
+            <label class="col-sm-1 control-label">留言文章</label>
+            <div class="col-sm-9">
+                <p class="form-control-static">{{ latest_comment.article.title }}</p>
+            </div>
+        </div>
+        <div class="form-group comment-div">
+            <label class="col-sm-1 control-label">父级评论</label>
+            <div class="col-sm-9">
+                <p class="form-control-static">{{ latest_comment.parent_comment }}</p>
+            </div>
+        </div>
+        <div class="form-group comment-div">
+            <label class="col-sm-1 control-label">评论内容</label>
+            <div class="col-sm-9">
+                <p class="form-control-static">{{ latest_comment.comment|safe }}</p>
+            </div>
+        </div>
+        <div class="form-group comment-div">
+            <label class="col-sm-1 control-label">评论状态</label>
+            <div class="col-sm-9">
+                <p class="form-control-static">{% if not latest_comment.status %}<span class="glyphicon glyphicon-ok" style="color: forestgreen;"></span>{% else %}<span class="glyphicon glyphicon-remove" style="color: orangered"></span>{% endif %}</p>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block js-area %}
+
+{% endblock %}

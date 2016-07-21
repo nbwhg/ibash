@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="author" content="ibash">
+    <base target="{% block urlopentype %}{% endblock %}"/>
+    <meta name="keywords" content="{% block keywords %}{% endblock %}">
+    <meta name="description" content="{% block description %}{% endblock %}">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="shortcut icon" href="/static/img/ibash.ico" />
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/static/css/common.css" rel="stylesheet" />
+    <link href="/static/css/code-style.css" rel="stylesheet" />
+
+    <script src="/static/js/jquery-1.12.3.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation"><!--务必为导航条设置 role="navigation" 属性，这样能够让使用辅助设备的用户明确知道这是一个导航区域-->
+        <div class="container-fluid"><!--告诉导航栏采用流布局方式,如果是container的话就是居中效果,和网格系统是一样的效果-->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="{% url 'frontend:index' %}" target="_self"><img src="/static/img/logo.png" alt="iBash"></a><!--放置logo-->
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#zishiying" aria-expanded="false">
+                <!--这个button是一个隐藏的按钮,当窗口小于768px的时候会显示,并且把ID为zishiying的元素隐藏-->
+                <span class="sr-only">iBash</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span><!--表示一条小横杠,这里一共是三条横杠,表示button的样式-->
+                <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="zishiying"><!--自适应,将所有的菜单包起来-->
+                <ul class="nav navbar-nav blog-nav">
+                    <li class=""><a href="{% url 'frontend:index' %}" target="_self">首页 </a></li>
+                    {% block article-category %}{% endblock %}
+                    <li class="dropdown"><!--下拉菜单-->
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">专题 <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            {% block project-category %}{% endblock %}
+                            <li role="separator" class="divider"></li><!--横线-->
+                            <li><a href="#">其他</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <form id="searchform" class="navbar-form navbar-right" role="search" method="post" action="{% url 'frontend:search' %}"><!--搜索框,右浮动-->
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search" name="searchkey">
+                    </div>
+                    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> 搜索 </button>
+                </form>
+            </div>
+        </div>
+    </nav><!--导航结束-->
+    <div style="height: 60px;"></div><!--撑开内容高度,因为导航栏是固定在顶部的,并且导航栏是50px-->
+    {% block container %}
+    <div class="container-fluid"><!--流式布局的盒子,栅格系统,表示是按照100%来计算的;也可以使用container,表示使用固定的宽度--><div class="row">
+        <div class="col-md-9"><!--占9个栅格-->
+            {% block main-box %}
+            {% endblock %}<!--博客页面左侧-->
+        </div><!--9栅格结束-->
+
+        <div class="col-md-3"><!--占3个栅格-->
+
+            <div class="panel panel-primary"><!--利用面板制作侧边栏-->
+                <div class="panel-heading"><h3 class="panel-title">About</h3></div>
+                <div class="panel-body">
+                    <p class="text-muted">QQ: xxxxxxx</p>
+                    <p class="text-muted">邮箱: xxxxxxx@qq.com</p>
+                    <p class="text-info">本站关注运维及周边技术</p>
+                </div>
+                <div class="panel-footer"></div>
+            </div><!--关于-->
+
+            <ul class="nav nav-tabs" id="xuanxiangka1"><!--选项卡-->
+                <li role="presentation" class="active"><a href="#newpub" data-toggle="tab">最新发表</a></li>
+                <li role="presentation"><a href="#hotarticle" data-toggle="tab">最热文章</a></li>
+            </ul>
+            <div class="tab-content"><!--选项卡内容-->
+                <div class="tab-pane fade in active" id="newpub">
+                    {% block newpub %}{% endblock %}
+                </div>
+                <div class="tab-pane fade" id="hotarticle">
+                    {% block hotarticle %}{% endblock %}
+                </div>
+            </div><!--选项卡结束--><!--最新最热文章-->
+
+            <div style="height: 10px;"></div>
+
+            <div class="panel panel-primary"><!--利用带列表组的面板制作最新评论-->
+                <div class="panel-heading">近期评论</div>
+                <ul class="list-group">
+                    {% block latest_comm %}{% endblock %}
+                </ul>
+            </div><!--最近评论-->
+
+            <div class="panel panel-primary">
+                <div class="panel-heading">友情链接</div>
+                <ul class="list-group">
+                    {% block link %}{% endblock %}
+                </ul>
+            </div><!--友情链接-->
+        </div><!--3栅格结束--><!--博客右侧结束-->
+    </div><!--row结束--></div><!--container结束-->
+    {% endblock %}
+    <footer class="blog-footer">
+        <p>Copyright&nbsp;&copy;&nbsp;2016&nbsp;<a href="http://www.ibash.cc">iBash</a>&nbsp;All&nbsp;Rights&nbsp;Reserved.</p>
+        <p><a href="#">Back to top</a></p>
+    </footer><!--底部信息-->
+</body>
+<script src="/static/js/bootstrap.min.js"></script>
+<script src="/static/js/google-code-prettify/prettify.js"></script>
+<script src="/static/js/tinymce/tinymce.min.js"></script>
+<script src="/static/js/search.js"></script>
+{% block jscode %}{% endblock %}
+</html>
