@@ -103,7 +103,7 @@ def detail(request, article_id):
 
 def comments(request, article_id):
     '''评论处理'''
-    timez = request.environ['TZ']
+    timez = request.environ['TZ'] # 这里的时区上线后应该改为settings.TIME_ZONE, 或者直接字符串
     if request.method == 'GET':
         '''请求评论'''
         comment_list = models.Comments.objects.filter(article__id=article_id, status=False)
