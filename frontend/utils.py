@@ -51,11 +51,12 @@ def handle_single_comm(comm, timez):
 class VerifyCode(object):
     '''生成验证码'''
     def __init__(self, nums):
+        font_path = '%s/static/img/ARIAL.TTF' % settings.BASE_DIR# 字体存放路径
         self.nums = self.__str2num(nums)
         self.width = 60 * self.nums
         self.height = 60
         self.__image = Image.new('RGB', (self.width, self.height), (255, 255, 255))#新建画布
-        self.__font = ImageFont.truetype('Arial.ttf', 36)#新建字体
+        self.__font = ImageFont.truetype(font_path, 36)#新建字体,要保证字体存在,
         self.__draw = ImageDraw.Draw(self.__image)#绘画对象
         self.__vcode = []
         self.name = ''
@@ -69,9 +70,10 @@ class VerifyCode(object):
         self.__Vcode()
         self.__image = self.__image.filter(ImageFilter.BLUR)
         self.__image.save('%s/%s' % (codepath, name), 'jpeg')
-        return {'vcode': ''.join(self.__vcode), 'name': name}
-        # self.name = name
-        # self.code = ''.join(self.__vcode)
+        vcode = ''.join(self.__vcode)
+        v_obj = models.Vcode(vcodefilename=name, vcode=vcode)
+        v_obj.save()
+        return v_obj
 
     def __rndChar(self):
         '''随机字符'''
@@ -189,6 +191,8 @@ class PageInfo(object):
             all_page=all_page[0]
         else:
             all_page=all_page[0] + 1
+        # 末页bug(如果没人任何文章,点击末页会出现错误)
+        if self.AllCount == 0:all_page = 1
         return all_page
 
 def Pager(current_page, all_page):

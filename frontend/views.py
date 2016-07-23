@@ -9,9 +9,6 @@ from ibash import settings
 from . import models
 import json, utils, os
 
-# 用于存放验证码验证信息,验证完成不论成功或者失败都会删除对应的key,value
-# 存储格式{'验证码文件名': '验证码'}
-vcodedic = {}
 # Create your views here.
 
 def index(request):
@@ -113,10 +110,13 @@ def comments(request, article_id):
         comment_tree = utils.handle_comm(comment_list, timez)
         return HttpResponse(json.dumps(comment_tree, default=utils.json_date_handler))
     elif request.method == 'POST':
-        for item in vcodedic.iteritems():
-            if request.POST['vcode'].upper() in item:
+        for vcode_obj in models.Vcode.objects.all():
+            if request.POST['vcode'].upper() == vcode_obj.vcode:
                 # 评论提交后再做一次验证,如果验证整个才会入库
-                del vcodedic[item[0]]
+                try:
+                    vcode_obj.delete()
+                except:
+                    pass
                 if len(request.POST['comment']) < 5:
                     # 再做一次评论长度的验证
                     res = "2"
@@ -134,22 +134,25 @@ def genvcode(request):
     if request.method == 'GET':
         '''请求验证码'''
         vcodeobj = utils.VerifyCode(5)
-        callbackdata  = vcodeobj.gencode()
-        vcodedic[callbackdata['name']] = callbackdata['vcode']
-        return HttpResponse(callbackdata['name'])
+        vcode_obj = vcodeobj.gencode()
+        return HttpResponse(vcode_obj.vcodefilename)
     elif request.method == 'POST':
         '''验证验证码'''
-        if vcodedic.has_key(os.path.basename(request.POST['name'])) and vcodedic[os.path.basename(request.POST['name'])] == request.POST['inputvcode'].upper():
+        try:
+            vcode_obj = get_object_or_404(models.Vcode, vcodefilename=os.path.basename(request.POST['name']))
+        except Exception,e:
+            vcode_obj = None
+        if vcode_obj is not None and vcode_obj.vcode == request.POST['inputvcode'].upper():
             status = "0"
-            #del vcodedic[os.path.basename(request.POST['name'])]# 删除字典中的值
+            '''验证成功不删除验证码的数据,只删除验证码图片,等真正提交评论的时候再次验证成功后才会删除验证码'''
             if os.path.isfile(os.path.join(settings.VCODE, os.path.basename(request.POST['name']))):
                 '''删除验证码图片'''
                 os.remove(os.path.join(settings.VCODE, os.path.basename(request.POST['name'])))
         else:
             status = "1"
             try:
-                del vcodedic[os.path.basename(request.POST['name'])]# 删除字典中的值
-            except KeyError:
+                vcode_obj.delete()
+            except:
                 pass
             if os.path.isfile(os.path.join(settings.VCODE, os.path.basename(request.POST['name']))):
                 '''删除验证码图片'''

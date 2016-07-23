@@ -84,3 +84,12 @@ class Link(models.Model):
     class Meta:
         verbose_name = u'友情链接'
         verbose_name_plural = u'友情链接'
+
+class Vcode(models.Model):
+    vcodefilename = models.CharField(u'验证码图片名称', max_length=20, unique=True)
+    vcode = models.CharField(u'验证码', max_length=5)
+    def __unicode__(self):
+        return self.vcode
+    class Meta:
+        verbose_name = u'验证码'
+        verbose_name_plural = u'验证码'
