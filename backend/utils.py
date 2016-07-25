@@ -48,7 +48,7 @@ class ArticleGen(object):
             # 搜索匹配标签
             pic_url = re_obj.search(content).group(1)
             if re.match(r'^/image/(.*)', pic_url):
-                # 判断匹配链接是否是本地图片
+                # 判断匹配链接是否是本地图片,匹配准确的图片地址
                 head_img=re.match(r'^/image/(.*\.(jpg|png|gif|bmp|jpeg))', pic_url).group(1)
             else:
                 head_img=u'article/head_img%d.png' % random.choice([1, 2, 3])
