@@ -21,7 +21,7 @@ def index(request):
     # 博客分类列表
     categories = models.Categories.objects.filter(status=False)
     # 最近的评论列表
-    latest_comments = models.Comments.objects.filter(article__status=False).order_by('-published_date')[:12]
+    latest_comments = models.Comments.objects.filter(status=False).filter(article__status=False).order_by('-published_date')[:12]
     # 友情链接列表
     links = models.Link.objects.filter(status=False)
     # 获取当前请求的页数
@@ -54,7 +54,7 @@ def index_cate(request, cate):
     # 博客分类列表
     categories = models.Categories.objects.filter(status=False)
     # 最近的评论列表
-    latest_comments = models.Comments.objects.filter(article__status=False).order_by('-published_date')[:12]
+    latest_comments = models.Comments.objects.filter(status=False).filter(article__status=False).order_by('-published_date')[:12]
     # 友情链接列表
     links = models.Link.objects.filter(status=False)
     try:
@@ -86,7 +86,7 @@ def detail(request, article_id):
     # 博客分类列表
     categories = models.Categories.objects.filter(status=False)
     # 最近的评论列表
-    latest_comments = models.Comments.objects.filter(article__status=False).order_by('-published_date')[:12]
+    latest_comments = models.Comments.objects.filter(status=False).filter(article__status=False).order_by('-published_date')[:12]
     # 友情链接列表
     links = models.Link.objects.filter(status=False)
     # 增加一个浏览量
