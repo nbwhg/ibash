@@ -25,7 +25,7 @@ class ArticleGen(object):
             description=self.__description,
             tags=self.__tags,
             author_id=self.__author_id,
-            head_img=self.__genpic(self.__content),
+            head_img=genpic(self.__content),
         )
         self.__articleinfo.save()
         self.__articleinfo.categories.add(*self.__category_id)
@@ -41,20 +41,20 @@ class ArticleGen(object):
         self.__articleviews.save()
         return u'文章 " ' + self.__title + u' " 创建成功!'
 
-    def __genpic(self, content):
-        # 利用正则匹配生成head img 图片
-        re_obj = re.compile(r'<img src="(.*)"/>')
-        if re_obj.search(content):
-            # 搜索匹配标签
-            pic_url = re_obj.search(content).group(1)
-            if re.match(r'^/image/(.*)', pic_url):
-                # 判断匹配链接是否是本地图片,匹配准确的图片地址
-                head_img=re.match(r'^/image/(.*\.(jpg|png|gif|bmp|jpeg))', pic_url).group(1)
-            else:
-                head_img=u'article/head_img%d.png' % random.choice([1, 2, 3])
+def genpic(content):
+    # 利用正则匹配生成head img 图片
+    re_obj = re.compile(r'<img src="(.*)"/>')
+    if re_obj.search(content):
+        # 搜索匹配标签
+        pic_url = re_obj.search(content).group(1)
+        if re.match(r'^/image/(.*)', pic_url):
+            # 判断匹配链接是否是本地图片,匹配准确的图片地址
+            head_img=re.match(r'^/image/(.*\.(jpg|png|gif|bmp|jpeg))', pic_url).group(1)
         else:
-            head_img = u'article/head_img%d.png' % random.choice([1, 2, 3])
-        return head_img
+            head_img=u'article/head_img%d.png' % random.choice([1, 2, 3])
+    else:
+        head_img = u'article/head_img%d.png' % random.choice([1, 2, 3])
+    return head_img
 
 
 def upload_pic(file_obj):

@@ -15,6 +15,7 @@ from django.db.models import Sum
 import utils, json, datetime, pytz, os
 from django.utils import timezone
 from ibash import settings
+from utils import genpic
 
 # Create your views here.
 
@@ -87,6 +88,7 @@ def create_article(request):
             article_obj.title = request.POST.get('title')
             article_obj.description = request.POST.get('description')
             article_obj.tags = request.POST.get('tags')
+            article_obj.head_img = genpic(request.POST['content'])
             article_obj.articledetail.content = request.POST.get('content')
             article_obj.categories.clear()
             article_obj.categories.add(*request.POST.getlist('category_id[]'))
