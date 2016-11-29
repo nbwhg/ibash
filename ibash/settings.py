@@ -104,7 +104,7 @@ DATABASES = {
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
-LANGUAGE_CODE = 'zh-CN'
+LANGUAGE_CODE = 'en-US'
 
 TIME_ZONE = 'Asia/Shanghai'
 
