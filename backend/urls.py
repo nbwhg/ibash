@@ -3,6 +3,7 @@
 
 from django.conf.urls import url
 from . import views
+from ueditor import views as ueviews
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
@@ -23,4 +24,5 @@ urlpatterns = [
     url(r'^comment_update_status/$', views.comment_update_status, name='comment_update_status'),
     url(r'^categories_manage/$', views.categories_manage, name='categories_manage'),
     url(r'^load/$', views.load, name='load'),
+    url(r'^ueditor_config/$', ueviews.customConfig),
 ]
