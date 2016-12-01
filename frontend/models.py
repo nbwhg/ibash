@@ -48,6 +48,7 @@ class ArticleDetail(models.Model):
 
 class ArticleViews(models.Model):
     article = models.OneToOneField('ArticleInfo', on_delete=models.DO_NOTHING)
+    uid = models.CharField(u'用户cookie', max_length=32)
     views = models.IntegerField(u'浏览量', default=0)
     def __unicode__(self):
         return "%s==>%s" % (self.article.title, self.views)

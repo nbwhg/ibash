@@ -8,10 +8,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from ibash import settings
 from . import models
 import json, utils, os
+import uuid
 
 # Create your views here.
 
 def index(request):
+    # 生成UUID1
+    # value = uuid.uuid1().get_hex()
     # 获取数据库中的记录数目
     all_count = models.ArticleInfo.objects.filter(status=False).count()
     # 最新发表文章列表
@@ -35,7 +38,7 @@ def index(request):
     article_page = models.ArticleInfo.objects.filter(status=False).order_by('-modify_date')[pageobj.start:pageobj.end]
     # 分页字符串
     page_string = utils.Pager(page, pageobj.all_page)
-    return render(request, 'frontend/index.html', {
+    response = render(request, 'frontend/index.html', {
         'article_page': article_page,
         'page_string': page_string,
         'categories': categories,
@@ -44,8 +47,13 @@ def index(request):
         'latest_comments': latest_comments,
         'links': links,
     })
+    # 设置cookie
+    # response.set_cookie("uid", value)
+    return response
 
 def index_cate(request, cate):
+    # 生成UUID1
+    # value = uuid.uuid1().get_hex()
     all_count = models.ArticleInfo.objects.filter(status=False,categories__url=cate).count()
     # 最新发表文章列表
     new_articles = models.ArticleInfo.objects.filter(status=False).order_by('-published_date')[:12]
@@ -67,7 +75,7 @@ def index_cate(request, cate):
     article_page = models.ArticleInfo.objects.filter(status=False,categories__url=cate).order_by('-modify_date')[pageobj.start:pageobj.end]
     # 分页字符串
     page_string = utils.Pager(page, pageobj.all_page)
-    return render(request, 'frontend/index_cate.html', {
+    response = render(request, 'frontend/index_cate.html', {
         'article_page': article_page,
         'page_string': page_string,
         'categories': categories,
@@ -76,6 +84,8 @@ def index_cate(request, cate):
         'latest_comments': latest_comments,
         'links': links,
     })
+    # response.set_cookie("uid", value)
+    return response
 
 def detail(request, article_id):
     article = get_object_or_404(models.ArticleInfo, pk=article_id)
@@ -89,10 +99,18 @@ def detail(request, article_id):
     latest_comments = models.Comments.objects.filter(status=False).filter(article__status=False).order_by('-published_date')[:12]
     # 友情链接列表
     links = models.Link.objects.filter(status=False)
-    # 增加一个浏览量
-    article.articleviews.views += 1
-    article.articleviews.save()
-    return render(request, 'frontend/detail.html', {
+    # 读取cookie
+    uid_value = request.COOKIES.get('uid')
+    # 如果直接打开详情页,则不存在cookie,那么直接增加1次浏览量,并写入cookie
+    if uid_value is None:
+        uid_value = uuid.uuid1().get_hex()
+    if uid_value != article.articleviews.uid:
+        # 增加一个浏览量
+        article.articleviews.views += 1
+        # 增加记录
+        article.articleviews.uid = uid_value
+        article.articleviews.save()
+    response = render(request, 'frontend/detail.html', {
         'article': article,
         'categories': categories,
         'new_articles': new_articles,
@@ -100,6 +118,8 @@ def detail(request, article_id):
         'latest_comments': latest_comments,
         'links': links,
     })
+    response.set_cookie("uid", uid_value, path="/")
+    return response
 
 def comments(request, article_id):
     '''评论处理'''
