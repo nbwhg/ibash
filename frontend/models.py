@@ -25,7 +25,7 @@ class ArticleInfo(models.Model):
     title = models.CharField(u'文章标题', max_length=100)
     head_img = models.ImageField(u'链接图片', upload_to="article/")
     description = models.CharField(u'文章描述', max_length=255)
-    tags = models.CharField(u'文章标签', max_length=55)#关键字以|分隔
+    tags = models.CharField(u'文章标签', max_length=255)#关键字以|分隔
     author = models.ForeignKey(MyUserAuth, on_delete=models.DO_NOTHING)
     categories = models.ManyToManyField('Categories')
     published_date = models.DateTimeField(u'创建时间', auto_now_add=True)
