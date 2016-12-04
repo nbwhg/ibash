@@ -26,7 +26,7 @@
 {% for article in artilelist  %}
 <div class="comment-level">
     <div class="comment-box">
-    <a href="{% url 'frontend:article_detail' article.id %}" target="_blank"><h4>{{ article.title|striptags|title|truncatechars:48 }}</h4></a>
+    <a href="{% url 'frontend:article_detail' article.id %}" target="_blank"><h4>{{ article.title|striptags|truncatechars:48 }}</h4></a>
         <p class="text-muted">
             <span class="glyphicon glyphicon-time" aria-hidden="true"></span>
             最后修改时间 : {{ article.modify_date }}&nbsp;&nbsp;&nbsp;&nbsp;

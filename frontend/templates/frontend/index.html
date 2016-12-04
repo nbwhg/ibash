@@ -31,7 +31,7 @@
                     <a href="{% url 'frontend:article_detail' article.id %}" class="thumbnail"><img src="/image/{{ article.head_img }}" alt="iBash站点"></a>
                 </div>
                 <div class="col-md-9 article-summary">
-                    <a href="{% url 'frontend:article_detail' article.id %}" target="_blank"><h4>{{ article.title|striptags|title|truncatechars:38 }}</h4></a>
+                    <a href="{% url 'frontend:article_detail' article.id %}" target="_blank"><h4>{{ article.title|striptags|truncatechars:38 }}</h4></a>
                     <p class="text-muted"><!--text-muted类可以让字体颜色变灰-->
                         <span class="glyphicon glyphicon-time" aria-hidden="true"></span>
                         <small>最后修改时间 : {{ article.modify_date }}</small>&nbsp;&nbsp;&nbsp;&nbsp;
