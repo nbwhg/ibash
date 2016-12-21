@@ -139,3 +139,49 @@ EMAIL_USER = ''
 EMAIL_PWD = ''
 EMAIL_SER = ''
 EMAIL_PORT = ''
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s %(filename)s %(module)s %(funcName)s %(lineno)d - %(name)s - %(levelname)s - %(message)s',
+            'datefmt': '[%d/%m/%Y %H:%M:%S]',
+        },
+    },
+    'handlers': {
+        'request_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/access.log',
+            'maxBytes': 1024*1024*10, # 10M
+            'backupCount': 7,
+            'formatter': 'standard',
+        },
+        'application_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/application.log',
+            'maxBytes': 1024*1024*10, # 10M
+            'backupCount': 7,
+            'formatter': 'standard',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['application_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['request_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['request_file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+    }
+}
