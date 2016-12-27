@@ -92,11 +92,11 @@ WSGI_APPLICATION = 'ibash.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': '',
+        'NAME': 'ibash',
         'HOST': '127.0.0.1',
         'PORT': '3306',
-        'USER': '',
-        'PASSWORD': '',
+        'USER': 'root',
+        'PASSWORD': 'www.123',
     }
 }
 

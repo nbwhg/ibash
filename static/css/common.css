@@ -221,3 +221,13 @@ pre.prettyprint.linenums ol li {
     color: forestgreen;
     display: none;
 }
+
+.mark {
+    background-color: #c1dde6;
+    border-radius: 4%;
+}
+
+.mark a:hover {
+    color: #ff7902;
+    font-size: 15px;
+}

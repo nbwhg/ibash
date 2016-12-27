@@ -21,6 +21,15 @@ class Categories(models.Model):
         verbose_name = u'博客分类'
         verbose_name_plural = u"博客分类"
 
+class Ittag(models.Model):
+    name = models.CharField(u'标签名称', max_length=55, unique=True)
+    status = models.BooleanField(u'是否删除', default=False)
+    def __unicode__(self):
+        return self.name
+    class Meta:
+        verbose_name = u'技术标签'
+        verbose_name_plural = u"技术标签"
+
 class ArticleInfo(models.Model):
     title = models.CharField(u'文章标题', max_length=100)
     head_img = models.ImageField(u'链接图片', upload_to="article/")
@@ -28,6 +37,7 @@ class ArticleInfo(models.Model):
     tags = models.CharField(u'文章标签', max_length=255)#关键字以|分隔
     author = models.ForeignKey(MyUserAuth, on_delete=models.DO_NOTHING)
     categories = models.ManyToManyField('Categories')
+    ittags = models.ManyToManyField(Ittag)
     published_date = models.DateTimeField(u'创建时间', auto_now_add=True)
     modify_date = models.DateTimeField(u'最后修改时间', auto_now=True)
     status = models.BooleanField(u'是否删除', default=False)

@@ -61,6 +61,12 @@
     </div><!--分页-->
 {% endblock %}
 
+{% block ittag %}
+    {% for item in ittags %}
+        <span class="mark"><a href="{% url 'frontend:index' %}?key={{ item.name }}">{{ item.name }}({{ item.articleinfo_set.count }})</a></span>
+    {% endfor %}
+{% endblock %}
+
 {% block newpub %}
     {% for new_article in new_articles %}
         <p><a href="{% url 'frontend:article_detail' new_article.id %}"><abbr title="{{ new_article.title }}">{{ new_article.title|striptags|truncatechars:12 }}</abbr></a><span class="pull-right"><span>发布时间 : </span>{{ new_article.published_date|date:"m-d H:i" }}</span></p>
@@ -93,6 +99,12 @@
                     $(this).parent().addClass('active'); //给父级的标签加上active属性
                 };
             });
+            tag_key = "{{ tag_key }}";
+            if (tag_key && tag_key != "None") {
+                $('ul.pagination li a').each(function () {
+                    this.href += '&key={{ tag_key }}'
+                });
+            };//修改分页的超链接，增加技术标签过滤
         });
     </script>
 {% endblock %}

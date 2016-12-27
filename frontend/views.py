@@ -15,8 +15,13 @@ import uuid
 def index(request):
     # 生成UUID1
     # value = uuid.uuid1().get_hex()
-    # 获取数据库中的记录数目
-    all_count = models.ArticleInfo.objects.filter(status=False).count()
+    # 获取技术标签关键字
+    tag_key = request.GET.get('key', None)
+    if tag_key:
+        all_count = models.ArticleInfo.objects.filter(status=False).filter(ittags__name=tag_key).count()
+    else:
+        # 获取数据库中的记录数目
+        all_count = models.ArticleInfo.objects.filter(status=False).count()
     # 最新发表文章列表
     new_articles = models.ArticleInfo.objects.filter(status=False).order_by('-published_date')[:12]
     # 浏览最多文章列表
@@ -27,6 +32,8 @@ def index(request):
     latest_comments = models.Comments.objects.filter(status=False).filter(article__status=False).order_by('-published_date')[:12]
     # 友情链接列表
     links = models.Link.objects.filter(status=False)
+    # 技术标签列表
+    ittags = models.Ittag.objects.filter(status=False)
     # 获取当前请求的页数
     try:
         page = int(request.GET.get('page'))
@@ -35,7 +42,10 @@ def index(request):
     # 分页对象
     pageobj = utils.PageInfo(page, all_count)
     # 获取当前页面的文章对象
-    article_page = models.ArticleInfo.objects.filter(status=False).order_by('-modify_date')[pageobj.start:pageobj.end]
+    if tag_key:
+        article_page = models.ArticleInfo.objects.filter(status=False).filter(ittags__name=tag_key).order_by('-modify_date')[pageobj.start:pageobj.end]
+    else:
+        article_page = models.ArticleInfo.objects.filter(status=False).order_by('-modify_date')[pageobj.start:pageobj.end]
     # 分页字符串
     page_string = utils.Pager(page, pageobj.all_page)
     response = render(request, 'frontend/index.html', {
@@ -46,6 +56,8 @@ def index(request):
         'hot_articles': hot_articles,
         'latest_comments': latest_comments,
         'links': links,
+        'ittags': ittags,
+        'tag_key': tag_key,
     })
     # 设置cookie
     # response.set_cookie("uid", value)
@@ -65,6 +77,8 @@ def index_cate(request, cate):
     latest_comments = models.Comments.objects.filter(status=False).filter(article__status=False).order_by('-published_date')[:12]
     # 友情链接列表
     links = models.Link.objects.filter(status=False)
+    # 技术标签列表
+    ittags = models.Ittag.objects.filter(status=False)
     try:
         page = int(request.GET.get('page'))
     except Exception,e:
@@ -83,6 +97,7 @@ def index_cate(request, cate):
         'hot_articles': hot_articles,
         'latest_comments': latest_comments,
         'links': links,
+        'ittags': ittags,
     })
     # response.set_cookie("uid", value)
     return response
@@ -99,6 +114,8 @@ def detail(request, article_id):
     latest_comments = models.Comments.objects.filter(status=False).filter(article__status=False).order_by('-published_date')[:12]
     # 友情链接列表
     links = models.Link.objects.filter(status=False)
+    # 技术标签列表
+    ittags = models.Ittag.objects.filter(status=False)
     # 读取cookie
     uid_value = request.COOKIES.get('uid')
     # 如果直接打开详情页,则不存在cookie,那么直接增加1次浏览量,并写入cookie
@@ -117,6 +134,7 @@ def detail(request, article_id):
         'hot_articles': hot_articles,
         'latest_comments': latest_comments,
         'links': links,
+        'ittags': ittags,
     })
     response.set_cookie("uid", uid_value, path="/")
     return response
