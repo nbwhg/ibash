@@ -1,0 +1,118 @@
+{% extends 'backend/base.html' %}
+
+{% block main-area %}
+<div style="color: #FF6C60"><h3>标签管理</h3></div>
+{% csrf_token %}
+
+<table class="table table-striped table-bordered table-hover">
+    <thead>
+    <tr><th><input type="checkbox" id="sel-all" onclick="CheckAllToggle(this)"> #</th><th>标签名称</th><th>文章个数</th><th>状态</th></tr>
+    </thead>
+    <tbody>
+        {% for tag in tags %}
+            <tr><th scope="row"><input type="checkbox" tagid="{{ tag.id }}"> {{ forloop.counter }}</th><td>{{ tag.name }}</td><td>{{ tag.articleinfo_set.count }}</td><td>{% if not tag.status %}<span class="glyphicon glyphicon-ok" style="color: forestgreen;"></span>{% else %}<span class="glyphicon glyphicon-remove" style="color: orangered"></span>{% endif %}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<button type="button" class="btn btn-info" onclick="del_and_reco()"> 删除/恢复 </button>
+
+<div id="filter-content">
+    <form class="form-inline" id="">
+        <div class="form-group">
+            <label for="InputName">分类名称 : </label>
+            <input type="text" class="form-control input-sm" id="InputName" placeholder="分类名称" name="tagname">
+        </div>
+        <input type="hidden" id="InputType" value="create" /><!--存放提交的类型,默认是创建-->
+        <input type="hidden" id="InputCid" value="0" /><!--存放提交的分类的ID,如果是修改已有,这里存储的值才有用-->
+        <button type="button" class="btn btn-info input-sm" id="option_cate" onclick="create_cate()"> 添加 标签 </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block js-area %}
+<script>
+    $(function () {
+        $('tbody tr').click(function () {
+            selectcheck(this)
+        });//鼠标单击选中checkbox
+
+        $('tbody tr').dblclick(function () {
+            tag_id = $(this).find("th input:checkbox").attr('tagid')
+            window.location.href="{% url 'backend:tags_manage' %}?tag_id=" + tag_id;//跳转到指定页面,并加载指定内容
+        });//鼠标双击修改该选中内容
+        
+        {% if tag_change %}//通过该变量判断是普通页面返回,还是返回要修改的内容
+            $('#InputName').val("{{ tag_change.name }}")
+            $('#InputType').val("update")
+            $('#InputCid').val("{{ tag_change.id }}")
+            $('#option_cate').text(" 更新 分类 ")
+            $('tbody tr th input:checkbox[tagid="{{ tag_change.id }}"]').prop('checked', true);
+        {% endif %}
+    });
+
+    function CheckAllToggle(ele){
+       if(ele.checked){//全选
+            $("tbody input:checkbox").prop("checked",true);
+       }else{
+            $("tbody input:checkbox").prop("checked",false);
+       }
+    };//全选和全不选的效果实现,prop是JQ属性操作
+
+    function selectcheck(ele) {
+        if($(ele).find("th input:checkbox").prop('checked')){//判断checkbox是否checked返回true或者false
+            $(ele).find("th input:checkbox").prop('checked', false)
+        }else {
+            $(ele).find("th input:checkbox").prop('checked', true)
+        }
+    };//点击行选中checkbox
+
+    function FindChecked() {
+        arr = []
+        $('tbody input:checkbox').each(function() {
+            if($(this).prop("checked")){
+                arr.push($(this).attr('tagid'))
+            };
+        });
+        return arr
+    };//查找已选中的元素
+
+    function del_and_reco() {
+        tag_list = FindChecked()
+        if ((tag_list).length == 0){
+            alert("没有选择的对象,请确认!");
+        }else {
+            if(confirm("请再次确认是否要更新?!")){
+                $.post("{% url 'backend:tags_manage' %}", {
+                    'type': 'update_tag',//这里的type表示需要更新状态
+                    'obj_lists': tag_list,
+                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+                    }, function (callback) {
+                        alert(callback);
+                        window.location.reload();
+                })
+            }else {
+                return false
+            };//end confirm
+        };
+    };//end function del_and_reco单纯的启用和停用链接
+
+    function create_cate() {
+        if(!$('#InputName').val()){
+            alert("分类名称不能为空!")
+            return false;
+        }else{
+            $.post("{% url 'backend:tags_manage' %}", {
+                'type': 'create_tag',
+                'tagname': $('#InputName').val(),
+                'commit_type': $('#InputType').val(),//这个commit_type表示是创建新分类还是修改已有分类
+                'tag_id': $('#InputCid').val(),
+                'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+            }, function (callback) {
+                alert(callback);
+                window.location.href="{% url 'backend:tags_manage' %}";
+            });
+        };
+    };//end function create link创建或者提交链接
+</script>
+{% endblock %}

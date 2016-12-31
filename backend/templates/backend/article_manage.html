@@ -17,6 +17,15 @@
             </select>
         </div>
         <div class="form-group">
+            <label for="inputtag">技术标签 : </label>
+            <select class="form-control input-sm" id="InputTag" name="tag_id">
+                <option value="all" selected="selected">所有标签</option>
+                {% for tag in ittags %}
+                    <option value="{{ tag.id }}">{{ tag.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
             <label for="InputName2">作者 : </label>
             <select class="form-control input-sm" id="InputName2" name="author_id">
                 <option value="all" selected="selected">所有作者</option>
@@ -51,11 +60,11 @@
 </div>
 <table class="table table-striped table-bordered table-hover">
     <thead>
-        <tr><th><input type="checkbox" id="sel-all" onclick="CheckAllToggle(this)"> #</th><th>标题</th><th>分类</th><th>描述</th><th>标签</th><th>作者</th><th>发表时间</th><th>最后修改</th></tr>
+    <tr><th><input type="checkbox" id="sel-all" onclick="CheckAllToggle(this)"> #</th><th>标题</th><th>分类</th><th>技术标签</th><th>描述</th><th>标签</th><th>作者</th><th>发表时间</th><th>最后修改</th></tr>
     </thead>
     <tbody>
         {% for article in article_page %}
-            <tr><th scope="row"><input type="checkbox" aid="{{ article.id }}"> {{ forloop.counter }}</th><td>{{ article.title }}</td><td>{% for cate in article.categories.all %}{{ cate.name }}&nbsp;&nbsp;{% endfor %}</td><td>{{ article.description }}</td><td>{{ article.tags }}</td><td>{{ article.author.name }}</td><td>{{ article.published_date }}</td><td>{{ article.modify_date }}</td></tr>
+            <tr><th scope="row"><input type="checkbox" aid="{{ article.id }}"> {{ forloop.counter }}</th><td>{{ article.title }}</td><td>{% for cate in article.categories.all %}{{ cate.name }}&nbsp;&nbsp;{% endfor %}</td><td>{% for tag in article.ittags.all %}{{ tag.name }}&nbsp;&nbsp;{% endfor %}</td><td>{{ article.description }}</td><td>{{ article.tags }}</td><td>{{ article.author.name }}</td><td>{{ article.published_date }}</td><td>{{ article.modify_date }}</td></tr>
         {% endfor %}
     </tbody>
 </table>
@@ -71,6 +80,10 @@
             <li class="dropdown-header">移动分类至</li>
                 {% for category in categories %}
                     <li><a value="{{ category.id }}" onclick="ChangeCate(this)">{{ category.name }}</a></li>
+                {% endfor %}
+            <li class="dropdown-header">移动标签至</li>
+                {% for tag in ittags %}
+                    <li><a value="{{ tag.id }}" onclick="Changetag(this)">{{ tag.name }}</a></li>
                 {% endfor %}
             <li class="dropdown-header">其他操作</li>
             <li><a onclick="DeleteSelect()">删除</a></li>
@@ -161,6 +174,7 @@
         $('#InputModDate2').val("{{ modify_date }}")
         $('#InputCon').val("{{ searchkey }}")
         $('#InputCate').val("{{ category_id }}")
+        $('#InputTag').val("{{ tag_id }}")
         $('.pagination a').attr({'href': 'javascript:void(0);'})
         $('.pagination a').click(function () {
             request_page = $(this).attr('pagenum')
@@ -218,6 +232,32 @@
                     $.post("{% url 'backend:option_changecate' %}", {
                         'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
                         'cid': cid,
+                        'arr_objs': arr_aid,
+                    }, function (callback) {
+                        alert(callback)
+                        window.location.reload();
+                    })
+                }else {
+                    return false;
+                };//end if post
+            };//end else cid
+        };//end else arr_aid
+    };
+
+    function Changetag(ele) {
+        //改变选中项的分类
+        tagid = $(ele).attr('value')
+        arr_aid = FindChecked()
+        if ((arr_aid).length == 0){
+            alert("没有选择的对象,请确认!");
+        }else {
+            if(!tagid){
+                return false
+            }else {
+                if(confirm("请再次确认是否要修改分类?!")){
+                    $.post("{% url 'backend:option_changetag' %}", {
+                        'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+                        'tagid': tagid,
                         'arr_objs': arr_aid,
                     }, function (callback) {
                         alert(callback)

@@ -18,11 +18,13 @@ urlpatterns = [
     url(r'^option_delete/$', views.option_delete, name='option_delete'),
     url(r'^recovery_article/$', views.recovery_article, name='recovery_article'),
     url(r'^option_changecate/$', views.option_changecate, name='option_changecate'),
+    url(r'^option_changetag/$', views.option_changetag, name='option_changetag'),
     url(r'^already_delete_article/$', views.already_delete_article, name='already_delete_article'),
     url(r'^comment_content/$', views.comment_content, name='comment_content'),
     url(r'^comment_manage/$', views.comment_manage, name='comment_manage'),
     url(r'^comment_update_status/$', views.comment_update_status, name='comment_update_status'),
     url(r'^categories_manage/$', views.categories_manage, name='categories_manage'),
+    url(r'^tags_manage/$', views.tags_manage, name='tags_manage'),
     url(r'^load/$', views.load, name='load'),
     url(r'^ueditor_config/$', ueviews.customConfig),
 ]

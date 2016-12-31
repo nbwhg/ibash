@@ -14,6 +14,7 @@ class ArticleGen(object):
         self.__tags = request.POST['tags']
         self.__content = request.POST['content']
         self.__category_id = request.POST.getlist('category_id[]')
+        self.__ittag_id = request.POST.getlist('ittag_id[]')
         self.__author_id = request.user.id
         self.__modify_date = timezone.now()
 
@@ -29,6 +30,7 @@ class ArticleGen(object):
         )
         self.__articleinfo.save()
         self.__articleinfo.categories.add(*self.__category_id)
+        self.__articleinfo.ittags.add(*self.__ittag_id)
         self.__articledetail = frontend_models.ArticleDetail(
             article=self.__articleinfo,
             content=self.__content,

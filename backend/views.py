@@ -69,12 +69,13 @@ def create_article(request):
     if request.method == 'GET':
         '''如果是GET则是请求创建文章的页面'''
         categories = frontend_models.Categories.objects.filter(status=False)
+        ittags = frontend_models.Ittag.objects.filter(status=False)
         if request.GET.get('article_id'):
             '''如果有article_id,则加载文章的内容,用于重新编辑修改文章内容'''
             article_obj = frontend_models.ArticleInfo.objects.get(pk=request.GET.get('article_id'))
-            return render(request, 'backend/create_article.html', {'categorys': categories, 'article_obj': article_obj})
+            return render(request, 'backend/create_article.html', {'categorys': categories, 'article_obj': article_obj, 'ittags': ittags})
         else:
-            return render(request, 'backend/create_article.html', {'categorys': categories})
+            return render(request, 'backend/create_article.html', {'categorys': categories, 'ittags': ittags})
     elif request.method == 'POST':
         '''如果是POST则是请求创建文章'''
         if request.POST.get('obj') == u'create':
@@ -102,6 +103,7 @@ def article_manage(request):
     '''文章管理的操作'''
     # 以下两个变量用于博文筛选
     categories = frontend_models.Categories.objects.filter(status=False)
+    ittags = frontend_models.Ittag.objects.filter(status=False)
     author_all = userauth_models.MyUserAuth.objects.all()
     if request.method == 'GET':
         '''GET方法表示请求页面并返回所有的文章'''
@@ -110,6 +112,7 @@ def article_manage(request):
         searchkey = ''
         a_id = ''
         category_id = ''
+        tag_id = ''
         pubdate = ''
         moddate = ''
         # 获取所有文章列表
@@ -137,11 +140,14 @@ def article_manage(request):
         else:
             p_date = pubdate
         category_id = request.POST['category_id']
+        tag_id = request.POST['tag_id']
         # 筛选结果,可以对结果集再次filter
         if category_id != u'all':
             article_list = frontend_models.ArticleInfo.objects.filter(status=False).filter(categories__id=category_id).order_by('-modify_date', 'published_date')
         else:
             article_list = frontend_models.ArticleInfo.objects.filter(status=False).order_by('-modify_date', 'published_date')
+        if tag_id != u'all':
+            article_list = article_list.filter(ittags__id=tag_id).order_by('-modify_date', 'published_date')
         if a_id != u'all':
             article_list = article_list.filter(author__id=a_id).order_by('-modify_date', 'published_date')
         if p_date != u'':
@@ -169,11 +175,13 @@ def article_manage(request):
         'article_page': article_page,
         'page_numbers': page_numbers,
         'categories': categories,
+        'ittags': ittags,
         'authors': author_all,
         'request_method': request_method,
         'searchkey': searchkey,
         'author_id': a_id,
         'category_id': category_id,
+        'tag_id': tag_id,
         'modify_date': moddate,
         'published_date': pubdate,
     })
@@ -211,9 +219,22 @@ def option_changecate(request):
         return HttpResponse("修改成功!")
 
 @login_required
+def option_changetag(request):
+    '''批量修改分类'''
+    if request.method == 'POST':
+        tagobj = frontend_models.Ittag.objects.get(pk=request.POST.get('tagid'))
+        for aid in request.POST.getlist('arr_objs[]'):
+            aobj = frontend_models.ArticleInfo.objects.get(pk=aid)
+            aobj.ittags.clear()
+            aobj.ittags.add(tagobj)
+            aobj.save()#一定要记得保存
+        return HttpResponse("修改成功!")
+
+@login_required
 def already_delete_article(request):
     '''已删除博文,处理逻辑跟博文管理一模一样'''
     categories = frontend_models.Categories.objects.filter(status=False)
+    ittags = frontend_models.Ittag.objects.filter(status=False)
     author_all = userauth_models.MyUserAuth.objects.all()
     if request.method == 'GET':
         # 以下变量前台筛选框需要
@@ -221,6 +242,7 @@ def already_delete_article(request):
         searchkey = ''
         a_id = ''
         category_id = ''
+        tag_id = ''
         pubdate = ''
         moddate = ''
         page = request.GET.get('page')
@@ -245,10 +267,13 @@ def already_delete_article(request):
         else:
             p_date = pubdate
         category_id = request.POST['category_id']
+        tag_id = request.POST['tag_id']
         if category_id != u'all':
             article_list = frontend_models.ArticleInfo.objects.filter(status=True).filter(categories__id=category_id).order_by('-modify_date', 'published_date')
         else:
             article_list = frontend_models.ArticleInfo.objects.filter(status=True).order_by('-modify_date', 'published_date')
+        if tag_id != u'all':
+            article_list = article_list.filter(ittags__id=tag_id).order_by('-modify_date', 'published_date')
         if a_id != u'all':
             article_list = article_list.filter(author__id=a_id).order_by('-modify_date', 'published_date')
         if p_date != u'':
@@ -278,11 +303,13 @@ def already_delete_article(request):
         'article_page': article_page,
         'page_numbers': page_numbers,
         'categories': categories,
+        'ittags': ittags,
         'authors': author_all,
         'request_method': request_method,
         'searchkey': searchkey,
         'author_id': a_id,
         'category_id': category_id,
+        'tag_id': tag_id,
         'modify_date': moddate,
         'published_date': pubdate,
     })
@@ -487,6 +514,46 @@ def categories_manage(request):
                 old_cate.type=request.POST['catetype']
                 old_cate.save()
                 return HttpResponse(u"%s , 更新成功!" % old_cate.name)
+
+@login_required
+def tags_manage(request):
+    '''博文标签管理'''
+    if request.method == 'GET':
+        '''GET方法处理页面返回'''
+        tags = frontend_models.Ittag.objects.all()
+        if request.GET.get('tag_id'):
+            '''带要修改的分类返回'''
+            tag_change = frontend_models.Ittag.objects.get(pk=request.GET.get('tag_id'))
+            return render(request, 'backend/tag_manage.html', {'tags': tags, 'tag_change': tag_change})
+        else:
+            '''普通返回'''
+            return render(request, 'backend/tag_manage.html', {'tags': tags})
+    elif request.method == 'POST':
+        '''负责内容提交'''
+        if request.POST.get('type') == 'update_tag':
+            '''通过type判断是更新状态还是提交内容,这里表示更新状态'''
+            for tag in request.POST.getlist('obj_lists[]'):
+                tag_obj = frontend_models.Ittag.objects.get(pk=tag)
+                if tag_obj.status:
+                    tag_obj.status = False
+                else:
+                    tag_obj.status = True
+                    tag_obj.articleinfo_set.clear()
+                tag_obj.save()
+            return HttpResponse("更新成功!")
+        if request.POST.get('type') == 'create_tag':
+            '''这里为提交内容'''
+            if request.POST.get('commit_type') == 'create':
+                '''提交内容中的commit_type为提交类型,create为创建一个新的分类,update为更新一个已有的分类'''
+                new_tag = frontend_models.Ittag(name=request.POST['tagname'])
+                new_tag.save()
+                return HttpResponse(u"%s , 创建成功!" % new_tag.name)
+            elif request.POST.get('commit_type') == 'update':
+                '''更新已有分类'''
+                old_tag = frontend_models.Ittag.objects.get(pk=request.POST.get('tag_id'))
+                old_tag.name=request.POST['tagname']
+                old_tag.save()
+                return HttpResponse(u"%s , 更新成功!" % old_tag.name)
 
 @login_required
 def load(request):

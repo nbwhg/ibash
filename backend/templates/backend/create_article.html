@@ -27,7 +27,17 @@
             <div class="col-sm-11">
                 <select multiple size="4" class="form-control" name="category_id">
                 {% for category in categorys %}
-                    <option value="{{ category.id }}">{{ category }}</option>
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+                </select>
+            </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-1 control-label">技术标签</label>
+            <div class="col-sm-11">
+                <select multiple size="4" class="form-control" name="tag_id">
+                {% for tag in ittags %}
+                    <option value="{{ tag.id }}">{{ tag.name }}</option>
                 {% endfor %}
                 </select>
             </div>
@@ -91,8 +101,12 @@
             return false
         }else {
             var category_arr = new Array()
-            $('#article_form select option:selected').each(function () {
+            $('#article_form select[name="category_id"] option:selected').each(function () {
                 category_arr.push(this.getAttribute('value'));
+            })
+            var ittag_arr = new Array()
+            $('#article_form select[name="tag_id"] option:selected').each(function () {
+                ittag_arr.push(this.getAttribute('value'));
             })
             $.post("{% url 'backend:create_article' %}", {
                 'obj': $('#obj').val(),
@@ -101,6 +115,7 @@
                 'tags': $('#tags').val(),
                 'content': UE.getEditor('editor').getContent(),
                 'category_id': category_arr,
+                'ittag_id': ittag_arr,
                 'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
             }, function (callback) {
                 $('#main-area').html('<h4>' + callback + '</h4>')
@@ -115,6 +130,9 @@
         $('#tags').val("{{ article_obj.tags }}")
         {% for cid in article_obj.categories.select_related %}
             $('#article_form select option[value="{{ cid.id }}"]').attr({'selected': 'selected'})
+        {% endfor %}
+        {% for tag in article_obj.ittags.select_related %}
+            $('#article_form select option[value="{{ tag.id }}"]').attr({'selected': 'selected'})
         {% endfor %}
         ue.ready(function() {
             ue.setContent($('#article_content').text());
