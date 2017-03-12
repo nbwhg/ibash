@@ -69,13 +69,13 @@
 
 {% block newpub %}
     {% for new_article in new_articles %}
-        <p><a href="{% url 'frontend:article_detail' new_article.id %}"><abbr title="{{ new_article.title }}">{{ new_article.title|striptags|truncatechars:12 }}</abbr></a><span class="pull-right"><span>发布时间 : </span>{{ new_article.published_date|date:"m-d H:i" }}</span></p>
+        <p><a href="{% url 'frontend:article_detail' new_article.id %}"><abbr title="{{ new_article.title }}">{{ new_article.title|striptags|truncatechars:10 }}</abbr></a><span class="pull-right"><span>发布时间 : </span>{{ new_article.published_date|date:"m-d H:i" }}</span></p>
     {% endfor %}
 {% endblock %}<!--最新发表-->
 
 {% block hotarticle %}
     {% for hot_article in hot_articles %}
-        <p><a href="{% url 'frontend:article_detail' hot_article.id %}"><abbr title="{{ hot_article.article.title }}">{{ hot_article.article.title|striptags|truncatechars:12 }}</abbr></a><span class="pull-right"><span>阅读量 : </span>{{ hot_article.views }}</span></p>
+        <p><a href="{% url 'frontend:article_detail' hot_article.id %}"><abbr title="{{ hot_article.article.title }}">{{ hot_article.article.title|striptags|truncatechars:10 }}</abbr></a><span class="pull-right"><span>阅读量 : </span>{{ hot_article.views }}</span></p>
     {% endfor %}
 {% endblock %}<!--最热文章-->
 
