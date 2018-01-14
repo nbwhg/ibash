@@ -197,6 +197,16 @@ def option_delete(request):
         return HttpResponse("删除成功!")
 
 @login_required
+def option_top(request):
+    '''批量置顶'''
+    if request.method == 'POST':
+        for aid in request.POST.getlist('top_objs[]'):
+            aobj = frontend_models.ArticleInfo.objects.get(pk=aid)
+            aobj.istop = True
+            aobj.save()#一定要保存
+        return HttpResponse("置顶成功!")
+
+@login_required
 def recovery_article(request):
     '''批量恢复'''
     if request.method == 'POST':

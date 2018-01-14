@@ -46,6 +46,14 @@
                         {% for tag in article.tags|custom_make_list %}
                             <span class="badge">{{ tag }}</span>
                         {% endfor %}
+
+                        {% if article.istop %}
+                            <span class="pull-right" style="color: red;font-weight: bold;border: 1px red solid;background-color: #f5f5f5;">
+                                <span>永久置顶</span>
+                                &nbsp;
+                                <span class="glyphicon glyphicon-open"></span>
+                            </span>
+                        {% endif %}
                     </p><!--利用徽章做页面关键字-->
                 </div>
             </div>

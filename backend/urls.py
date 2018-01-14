@@ -16,6 +16,7 @@ urlpatterns = [
     url(r'^create_article/$', views.create_article, name='create_article'),
     url(r'^article_manage/$', views.article_manage, name='article_manage'),
     url(r'^option_delete/$', views.option_delete, name='option_delete'),
+    url(r'^option_top/$', views.option_top, name='option_top'),
     url(r'^recovery_article/$', views.recovery_article, name='recovery_article'),
     url(r'^option_changecate/$', views.option_changecate, name='option_changecate'),
     url(r'^option_changetag/$', views.option_changetag, name='option_changetag'),

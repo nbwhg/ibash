@@ -60,11 +60,11 @@
 </div>
 <table class="table table-striped table-bordered table-hover">
     <thead>
-    <tr><th><input type="checkbox" id="sel-all" onclick="CheckAllToggle(this)"> #</th><th>标题</th><th>分类</th><th>技术标签</th><th>描述</th><th>标签</th><th>作者</th><th>发表时间</th><th>最后修改</th></tr>
+    <tr><th><input type="checkbox" id="sel-all" onclick="CheckAllToggle(this)"> #</th><th>标题</th><th>分类</th><th>技术标签</th><th>描述</th><th>标签</th><th>作者</th><th>发表时间</th><th>最后修改</th><th>是否置顶</th></tr>
     </thead>
     <tbody>
         {% for article in article_page %}
-            <tr><th scope="row"><input type="checkbox" aid="{{ article.id }}"> {{ forloop.counter }}</th><td>{{ article.title }}</td><td>{% for cate in article.categories.all %}{{ cate.name }}&nbsp;&nbsp;{% endfor %}</td><td>{% for tag in article.ittags.all %}{{ tag.name }}&nbsp;&nbsp;{% endfor %}</td><td>{{ article.description }}</td><td>{{ article.tags }}</td><td>{{ article.author.name }}</td><td>{{ article.published_date }}</td><td>{{ article.modify_date }}</td></tr>
+            <tr><th scope="row"><input type="checkbox" aid="{{ article.id }}"> {{ forloop.counter }}</th><td>{{ article.title }}</td><td>{% for cate in article.categories.all %}{{ cate.name }}&nbsp;&nbsp;{% endfor %}</td><td>{% for tag in article.ittags.all %}{{ tag.name }}&nbsp;&nbsp;{% endfor %}</td><td>{{ article.description }}</td><td>{{ article.tags }}</td><td>{{ article.author.name }}</td><td>{{ article.published_date }}</td><td>{{ article.modify_date }}</td><td>{{ article.istop }}</td></tr>
         {% endfor %}
     </tbody>
 </table>
@@ -86,6 +86,7 @@
                     <li><a value="{{ tag.id }}" onclick="Changetag(this)">{{ tag.name }}</a></li>
                 {% endfor %}
             <li class="dropdown-header">其他操作</li>
+            <li><a onclick="TopSelect()">永久置顶</a></li>
             <li><a onclick="DeleteSelect()">删除</a></li>
         </ul>
         </div>
@@ -217,6 +218,26 @@
             }
         };
     };//end function DeleteSelect
+
+    function TopSelect() {
+        //置顶选择的项
+        arr_aid = FindChecked()
+        if ((arr_aid).length == 0){
+            alert("没有选择的对象,请确认!");
+        }else {
+            if(confirm("请再次确认是否要置顶?!")){
+                $.post("{% url 'backend:option_top' %}", {
+                    'top_objs': arr_aid,
+                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+                    }, function (callback) {
+                        alert(callback);
+                        window.location.reload();
+                })
+            }else {
+                return false
+            }
+        };
+    };//end function TopSelect
 
     function ChangeCate(ele) {
         //改变选中项的分类

@@ -42,10 +42,11 @@ def index(request):
     # 分页对象
     pageobj = utils.PageInfo(page, all_count)
     # 获取当前页面的文章对象
+    # 多个字段排序, 第一个字段相同的情况下, 会用第二个字段排序
     if tag_key:
-        article_page = models.ArticleInfo.objects.filter(status=False).filter(ittags__name=tag_key).order_by('-modify_date')[pageobj.start:pageobj.end]
+        article_page = models.ArticleInfo.objects.filter(status=False).filter(ittags__name=tag_key).order_by('-istop', '-modify_date')[pageobj.start:pageobj.end]
     else:
-        article_page = models.ArticleInfo.objects.filter(status=False).order_by('-modify_date')[pageobj.start:pageobj.end]
+        article_page = models.ArticleInfo.objects.filter(status=False).order_by('-istop', '-modify_date')[pageobj.start:pageobj.end]
     # 分页字符串
     page_string = utils.Pager(page, pageobj.all_page)
     response = render(request, 'frontend/index.html', {
@@ -86,7 +87,7 @@ def index_cate(request, cate):
     # 分页对象
     pageobj = utils.PageInfo(page, all_count)
     # 获取当前页面的文章对象
-    article_page = models.ArticleInfo.objects.filter(status=False,categories__url=cate).order_by('-modify_date')[pageobj.start:pageobj.end]
+    article_page = models.ArticleInfo.objects.filter(status=False,categories__url=cate).order_by('-istop', '-modify_date')[pageobj.start:pageobj.end]
     # 分页字符串
     page_string = utils.Pager(page, pageobj.all_page)
     response = render(request, 'frontend/index_cate.html', {

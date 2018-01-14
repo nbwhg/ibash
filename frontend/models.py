@@ -41,6 +41,7 @@ class ArticleInfo(models.Model):
     published_date = models.DateTimeField(u'创建时间', auto_now_add=True)
     modify_date = models.DateTimeField(u'最后修改时间', auto_now=True)
     status = models.BooleanField(u'是否删除', default=False)
+    istop = models.BooleanField(u'是否置顶', default=False)
     def __unicode__(self):
         return self.title
     class Meta:
